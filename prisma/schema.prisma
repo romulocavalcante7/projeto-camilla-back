@@ -20,6 +20,7 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   Token           Token[]
+  orders          Order[]
 }
 
 model Token {
@@ -33,14 +34,126 @@ model Token {
   userId      String
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
 enum TokenType {
   ACCESS
   REFRESH
   RESET_PASSWORD
   VERIFY_EMAIL
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Order {
+  id                String   @id @default(uuid())
+  orderRef          String
+  orderStatus       String
+  productType       String
+  paymentMethod     String
+  storeId           String
+  paymentMerchantId String
+  installments      Int
+  cardType          String?
+  cardLast4Digits   String?
+  cardRejectionReason String?
+  boletoURL         String?
+  boletoBarcode     String?
+  boletoExpiryDate  DateTime?
+  pixCode           String?
+  pixExpiration     DateTime?
+  saleType          String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  approvedDate      DateTime?
+  refundedAt        DateTime?
+  webhookEventType  String
+  productId         String
+  customerId        String?
+  commissionId      String
+  subscriptionId    String?
+  accessURL         String?
+  userId            String
+
+  product           Product @relation(fields: [productId], references: [id])
+  customer          Customer? @relation(fields: [customerId], references: [id])
+  commission        Commission @relation(fields: [commissionId], references: [id])
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  user              User @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  orders      Order[]
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  fullName  String
+  firstName String
+  mobile    String
+  cpf       String
+  ip        String
+  orders    Order[]
+}
+
+model Commission {
+  id                  String   @id @default(uuid())
+  chargeAmount        Int
+  productBasePrice    Int
+  kiwifyFee           Int
+  currency            String
+  myCommission        Int
+  fundsStatus         String?
+  estimatedDepositDate DateTime?
+  depositDate         DateTime?
+  commissionedStores  CommissionedStore[]
+  orders              Order[]
+}
+
+model CommissionedStore {
+  id          String @id @default(uuid())
+  type        String
+  customName  String
+  email       String
+  value       Int
+  commissionId String
+  commission  Commission @relation(fields: [commissionId], references: [id])
+}
+
+model Subscription {
+  id          String   @id @default(uuid())
+  startDate   DateTime
+  nextPayment DateTime
+  status      String
+  planId      String
+  charges     Charge[]
+  orders      Order[]
+  
+  plan        Plan @relation(fields: [planId], references: [id])
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String
+  frequency   String
+  qtyCharges  Int
+  subscriptions Subscription[]
+}
+
+model Charge {
+  id             String @id @default(uuid())
+  orderId        String
+  amount         Int
+  status         String
+  installments   Int
+  cardType       String
+  cardLastDigits String
+  cardFirstDigits String
+  createdAt      DateTime @default(now())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
 }
