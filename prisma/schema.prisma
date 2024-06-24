@@ -21,6 +21,7 @@ model User {
   updatedAt       DateTime @updatedAt
   Token           Token[]
   orders          Order[]
+  avatar          Attachment? 
 }
 
 model Token {
@@ -32,6 +33,17 @@ model Token {
   createdAt   DateTime  @default(now())
   user        User      @relation(fields: [userId], references: [id])
   userId      String
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  filename  String
+  filetype  String
+  filesize  Int
+  url       String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @unique
 }
 
 enum TokenType {
