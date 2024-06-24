@@ -44,7 +44,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
   // Verifica se o usuário já existe
   let user;
   try {
-    user = await prisma.user.findUnique({ where: { email: email || "" } });
+    user = await prisma.user.findUnique({ where: { email: email } });
     if (!user) {
       // Gerar senha aleatória
       const randomPassword = generateRandomPassword(12);

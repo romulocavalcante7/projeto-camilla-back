@@ -2,6 +2,7 @@ import express from "express";
 import authRoute from "./auth.route";
 import userRoute from "./user.route";
 import webhookRoute from "./webhook.route";
+import uploadRoutes from "./upload.route";
 import docsRoute from "./docs.route";
 import config from "../../config/config";
 
@@ -19,6 +20,10 @@ const defaultRoutes = [
   {
     path: "/webhook",
     route: webhookRoute,
+  },
+  {
+    path: "/files",
+    route: uploadRoutes,
   },
 ];
 
