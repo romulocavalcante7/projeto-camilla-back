@@ -1,13 +1,13 @@
 import {
   PutObjectCommand,
   DeleteObjectCommand,
-  DeleteObjectCommandOutput,
   HeadObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 
 import { s3 } from "../aws";
 import config from "../config/config";
+import prisma from "../client";
 
 interface UploadResult {
   url: string;
@@ -69,21 +69,27 @@ const uploadFiles = async (files: Express.Multer.File[]): Promise<UploadResult[]
 /**
  * Exclui um arquivo do S3
  * @param {string} id - O ID do arquivo a ser excluído
- * @returns {Promise<DeleteObjectCommandOutput>}
+ * @returns {Promise<void>}
  */
-const deleteFile = async (url: string): Promise<any> => {
-  const key = url.split("/").pop();
-  if (!key) {
-    throw new Error("Invalid URL format");
+const deleteFile = async (id: string): Promise<void> => {
+  const file = await prisma.attachment.findUnique({
+    where: { id },
+  });
+
+  if (!file) {
+    throw new Error(`File with ID ${id} not found`);
   }
 
   const params = {
     Bucket: config.aws.bucketName,
-    Key: key,
+    Key: file.filename,
   };
 
   const command = new DeleteObjectCommand(params);
-  return await s3.send(command);
+  await s3.send(command);
+  await prisma.attachment.delete({
+    where: { id },
+  });
 };
 
 /**
