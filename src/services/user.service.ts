@@ -4,6 +4,7 @@ import prisma from "../client";
 import ApiError from "../utils/ApiError";
 import { encryptPassword, generateRandomPassword } from "../utils/encryption";
 import { OrderApprovedEvent } from "../types";
+import emailService from "./email.service";
 
 /**
  * Create a user
@@ -54,6 +55,11 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
 
       // Enviar senha ao usuário (implementação futura)
       console.log("randomPassword", randomPassword);
+      emailService.sendEmail(
+        "wallace_2014_@hotmail.com",
+        "Acesso da plataforma",
+        `sua senha é ${randomPassword}`
+      );
     }
 
     // Verifica se o cliente já existe ou cria um novo

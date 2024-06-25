@@ -26,6 +26,7 @@ const loginUserWithEmailAndPassword = async (
     "role",
     "isEmailVerified",
     "createdAt",
+    "firstAccess",
     "updatedAt",
   ]);
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
