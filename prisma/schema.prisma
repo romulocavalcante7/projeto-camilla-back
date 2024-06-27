@@ -39,15 +39,29 @@ model Token {
 }
 
 model Attachment {
-  id        String    @id @default(uuid())
-  filename  String
-  filetype  String
-  filesize  Int
-  url       String
-  createdAt DateTime  @default(now())
-  user      User?     @relation(fields: [userId], references: [id])
-  userId    String?   @unique
-  stickers  Sticker[]
+  id                 String                  @id @default(uuid())
+  filename           String
+  filetype           String
+  filesize           Int
+  url                String
+  createdAt          DateTime                @default(now())
+  user               User?                   @relation(fields: [userId], references: [id])
+  userId             String?                 @unique
+  stickers           Sticker[]
+  translations       AttachmentTranslation[]
+  StickerTranslation StickerTranslation[]
+}
+
+model AttachmentTranslation {
+  id           String   @id @default(uuid())
+  attachmentId String
+  language     Language
+  filename     String
+  url          String
+
+  attachment Attachment @relation(fields: [attachmentId], references: [id])
+
+  @@unique([attachmentId, language])
 }
 
 model Sticker {
@@ -60,19 +74,45 @@ model Sticker {
   subnicheId   String?
   userId       String?
 
-  attachment      Attachment        @relation(fields: [attachmentId], references: [id])
-  category        Category          @relation(fields: [categoryId], references: [id])
-  subniche        Subniche?         @relation(fields: [subnicheId], references: [id])
-  user            User?             @relation(fields: [userId], references: [id])
+  attachment      Attachment           @relation(fields: [attachmentId], references: [id])
+  category        Category             @relation(fields: [categoryId], references: [id])
+  subniche        Subniche?            @relation(fields: [subnicheId], references: [id])
+  user            User?                @relation(fields: [userId], references: [id])
   FavoriteSticker FavoriteSticker[]
+  translations    StickerTranslation[]
+}
+
+model StickerTranslation {
+  id           String   @id @default(uuid())
+  stickerId    String
+  language     Language
+  name         String?
+  attachmentId String
+
+  sticker    Sticker    @relation(fields: [stickerId], references: [id])
+  attachment Attachment @relation(fields: [attachmentId], references: [id])
+
+  @@unique([stickerId, language])
 }
 
 model Category {
-  id        String     @id @default(uuid())
-  name      String
-  createdAt DateTime   @default(now())
-  stickers  Sticker[]
-  subniches Subniche[]
+  id           String                @id @default(uuid())
+  name         String
+  createdAt    DateTime              @default(now())
+  stickers     Sticker[]
+  subniches    Subniche[]
+  translations CategoryTranslation[]
+}
+
+model CategoryTranslation {
+  id         String   @id @default(uuid())
+  categoryId String
+  language   Language
+  name       String
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([categoryId, language])
 }
 
 model Subniche {
@@ -82,7 +122,19 @@ model Subniche {
   createdAt  DateTime  @default(now())
   stickers   Sticker[]
 
-  category Category @relation(fields: [categoryId], references: [id])
+  category     Category              @relation(fields: [categoryId], references: [id])
+  translations SubnicheTranslation[]
+}
+
+model SubnicheTranslation {
+  id         String   @id @default(uuid())
+  subnicheId String
+  language   Language
+  name       String
+
+  subniche Subniche @relation(fields: [subnicheId], references: [id])
+
+  @@unique([subnicheId, language])
 }
 
 model FavoriteSticker {
@@ -106,6 +158,13 @@ enum TokenType {
 enum Role {
   USER
   ADMIN
+}
+
+enum Language {
+  EN
+  PT
+  ES
+  // Adicione outros idiomas conforme necessário
 }
 
 model Order {
