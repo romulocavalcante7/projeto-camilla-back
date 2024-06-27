@@ -1,0 +1,72 @@
+import Joi from "joi";
+
+const createSticker = {
+  body: Joi.object().keys({
+    name: Joi.string().optional(),
+    attachmentId: Joi.string().uuid().required(),
+    categoryId: Joi.string().uuid().required(),
+    subnicheId: Joi.string().uuid().allow(null).optional(),
+    userId: Joi.string().uuid().allow(null).optional(),
+    translations: Joi.array()
+      .items(
+        Joi.object().keys({
+          language: Joi.string().required(),
+          name: Joi.string().required(),
+        })
+      )
+      .allow(null)
+      .optional(),
+  }),
+};
+
+const getAllStickers = {
+  query: Joi.object().keys({
+    search: Joi.string(),
+    sortBy: Joi.string(),
+    limit: Joi.number().integer(),
+    page: Joi.number().integer(),
+  }),
+};
+
+const getStickerById = {
+  params: Joi.object().keys({
+    stickerId: Joi.string().uuid().required(),
+  }),
+};
+
+const updateSticker = {
+  params: Joi.object().keys({
+    stickerId: Joi.string().uuid().required(),
+  }),
+  body: Joi.object()
+    .keys({
+      name: Joi.string().optional(),
+      attachmentId: Joi.string().uuid().optional(),
+      categoryId: Joi.string().uuid().optional(),
+      subnicheId: Joi.string().uuid().optional(),
+      userId: Joi.string().uuid().optional(),
+      translations: Joi.array()
+        .items(
+          Joi.object().keys({
+            language: Joi.string().required(),
+            name: Joi.string().required(),
+          })
+        )
+        .optional(),
+    })
+    .min(1),
+};
+
+const deleteSticker = {
+  params: Joi.object().keys({
+    stickerId: Joi.string().uuid().required(),
+  }),
+};
+
+export default {
+  createSticker,
+  getAllStickers,
+  getStickerById,
+  updateSticker,
+  deleteSticker,
+};
