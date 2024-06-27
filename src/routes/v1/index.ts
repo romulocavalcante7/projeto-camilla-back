@@ -3,6 +3,9 @@ import authRoute from "./auth.route";
 import userRoute from "./user.route";
 import webhookRoute from "./webhook.route";
 import uploadRoutes from "./upload.route";
+import categoryRoutes from "./category.route";
+import stickerRoutes from "./sticker.route";
+import favoriteStickerRoutes from "./favoriteSticker.route";
 import docsRoute from "./docs.route";
 import config from "../../config/config";
 
@@ -24,6 +27,18 @@ const defaultRoutes = [
   {
     path: "/files",
     route: uploadRoutes,
+  },
+  {
+    path: "/categories",
+    route: categoryRoutes,
+  },
+  {
+    path: "/sticker",
+    route: stickerRoutes,
+  },
+  {
+    path: "/favoriteSticker",
+    route: favoriteStickerRoutes,
   },
 ];
 
