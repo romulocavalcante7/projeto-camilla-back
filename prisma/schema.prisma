@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -34,7 +31,7 @@ model Token {
   expires     DateTime
   blacklisted Boolean
   createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
 }
 
@@ -45,7 +42,7 @@ model Attachment {
   filesize           Int
   url                String
   createdAt          DateTime                @default(now())
-  user               User?                   @relation(fields: [userId], references: [id])
+  user               User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId             String?                 @unique
   stickers           Sticker[]
   translations       AttachmentTranslation[]
@@ -59,7 +56,7 @@ model AttachmentTranslation {
   filename     String
   url          String
 
-  attachment Attachment @relation(fields: [attachmentId], references: [id])
+  attachment Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
 
   @@unique([attachmentId, language])
 }
@@ -69,15 +66,15 @@ model Sticker {
   name         String
   attachmentId String
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now())
   categoryId   String
   subnicheId   String?
   userId       String?
 
-  attachment      Attachment           @relation(fields: [attachmentId], references: [id])
-  category        Category             @relation(fields: [categoryId], references: [id])
-  subniche        Subniche?            @relation(fields: [subnicheId], references: [id])
-  user            User?                @relation(fields: [userId], references: [id])
+  attachment      Attachment           @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  category        Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subniche        Subniche?            @relation(fields: [subnicheId], references: [id], onDelete: Cascade)
+  user            User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   FavoriteSticker FavoriteSticker[]
   translations    StickerTranslation[]
 }
@@ -89,8 +86,8 @@ model StickerTranslation {
   name         String?
   attachmentId String
 
-  sticker    Sticker    @relation(fields: [stickerId], references: [id])
-  attachment Attachment @relation(fields: [attachmentId], references: [id])
+  sticker    Sticker    @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+  attachment Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
 
   @@unique([stickerId, language])
 }
@@ -110,7 +107,7 @@ model CategoryTranslation {
   language   Language
   name       String
 
-  category Category @relation(fields: [categoryId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, language])
 }
@@ -122,7 +119,7 @@ model Subniche {
   createdAt  DateTime  @default(now())
   stickers   Sticker[]
 
-  category     Category              @relation(fields: [categoryId], references: [id])
+  category     Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   translations SubnicheTranslation[]
 }
 
@@ -132,7 +129,7 @@ model SubnicheTranslation {
   language   Language
   name       String
 
-  subniche Subniche @relation(fields: [subnicheId], references: [id])
+  subniche Subniche @relation(fields: [subnicheId], references: [id], onDelete: Cascade)
 
   @@unique([subnicheId, language])
 }
@@ -142,8 +139,8 @@ model FavoriteSticker {
   userId    String
   stickerId String
 
-  user    User    @relation(fields: [userId], references: [id])
-  sticker Sticker @relation(fields: [stickerId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sticker Sticker @relation(fields: [stickerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stickerId])
 }
@@ -186,7 +183,7 @@ model Order {
   pixExpiration       DateTime?
   saleType            String
   createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  updatedAt           DateTime  @default(now())
   approvedDate        DateTime?
   refundedAt          DateTime?
   webhookEventType    String
@@ -197,11 +194,11 @@ model Order {
   accessURL           String?
   userId              String
 
-  product      Product       @relation(fields: [productId], references: [id])
-  customer     Customer?     @relation(fields: [customerId], references: [id])
-  commission   Commission    @relation(fields: [commissionId], references: [id])
-  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
-  user         User          @relation(fields: [userId], references: [id])
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  commission   Commission    @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Product {
@@ -242,7 +239,7 @@ model CommissionedStore {
   email        String
   value        Int
   commissionId String
-  commission   Commission @relation(fields: [commissionId], references: [id])
+  commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
 }
 
 model Subscription {
@@ -254,7 +251,7 @@ model Subscription {
   charges     Charge[]
   orders      Order[]
 
-  plan Plan @relation(fields: [planId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model Plan {
@@ -276,5 +273,5 @@ model Charge {
   cardFirstDigits String
   createdAt       DateTime     @default(now())
   subscriptionId  String
-  subscription    Subscription @relation(fields: [subscriptionId], references: [id])
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
