@@ -1,8 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import httpStatus from "http-status";
-
-const prisma = new PrismaClient();
+import prisma from "../client";
 
 const createSticker = async (req: Request, res: Response) => {
   const { name, attachmentId, categoryId, subnicheId, userId, translations } = req.body;
@@ -73,6 +72,50 @@ const getStickerById = async (req: Request, res: Response) => {
   }
 };
 
+const getStickersBySubnicheId = async (req: Request, res: Response) => {
+  const { subnicheId } = req.params;
+  //@ts-ignore
+  const userId = req.user.id; // Supondo que você tenha o ID do usuário autenticado disponível em req.user.id
+
+  try {
+    // Consulta inicial para obter os stickers do subnicho
+    const stickers = await prisma.sticker.findMany({
+      where: {
+        subnicheId,
+      },
+      include: {
+        attachment: true,
+        translations: true,
+      },
+    });
+
+    // Consulta para obter os IDs dos stickers favoritos do usuário
+    const favoriteStickers = await prisma.favoriteSticker.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        stickerId: true,
+      },
+    });
+
+    const favoriteStickerIds = favoriteStickers.map((fav) => fav.stickerId);
+
+    // Adicionando o campo isFavorite a cada sticker
+    const stickersWithFavorite = stickers.map((sticker) => ({
+      ...sticker,
+      isFavorite: favoriteStickerIds.includes(sticker.id),
+    }));
+
+    res.status(httpStatus.OK).json(stickersWithFavorite);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Erro ao buscar figurinhas pelo subnicho." });
+  }
+};
+
 const updateSticker = async (req: Request, res: Response) => {
   const { stickerId } = req.params;
   const { name, attachmentId, categoryId, subnicheId, userId, translations } = req.body;
@@ -126,6 +169,7 @@ export default {
   createSticker,
   getAllStickers,
   getStickerById,
+  getStickersBySubnicheId,
   updateSticker,
   deleteSticker,
 };

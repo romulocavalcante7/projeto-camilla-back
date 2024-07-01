@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import httpStatus from "http-status";
-
-const prisma = new PrismaClient();
+import prisma from "../client";
 
 const createCategory = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -21,8 +19,21 @@ const createCategory = async (req: Request, res: Response) => {
 };
 
 const getAllCategories = async (req: Request, res: Response) => {
-  const { search, sortBy, limit, page } = req.query;
+  const { search } = req.query;
+
   try {
+    const totalCount = await prisma.category.count({
+      where: {
+        name: {
+          contains: search?.toString() || "",
+          mode: "insensitive",
+        },
+      },
+    });
+
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+
     const categories = await prisma.category.findMany({
       orderBy: {
         createdAt: "desc",
@@ -33,10 +44,26 @@ const getAllCategories = async (req: Request, res: Response) => {
           mode: "insensitive",
         },
       },
+      include: {
+        attachment: true,
+        subniches: true,
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
-    res.status(httpStatus.OK).json(categories);
+
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+      categories,
+    });
   } catch (error) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar categorias." });
+    console.error("Erro ao buscar categorias:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao buscar categorias.",
+    });
   }
 };
 

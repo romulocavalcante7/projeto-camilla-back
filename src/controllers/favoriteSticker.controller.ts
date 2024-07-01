@@ -12,18 +12,59 @@ const favoriteStickerController = {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: "Usuário não autenticado." });
     }
 
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+
     try {
-      const favorites = await prisma.favoriteSticker.findMany({
-        where: {
-          userId,
-        },
-        include: {
-          sticker: true,
-        },
+      const totalFavorites = await prisma.favoriteSticker.count({
+        where: { userId },
       });
 
-      res.status(httpStatus.OK).json(favorites);
+      const favorites = await prisma.favoriteSticker.findMany({
+        where: { userId },
+        include: {
+          sticker: {
+            include: {
+              attachment: true,
+            },
+          },
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      });
+
+      const simplifiedFavorites = favorites.map((favorite) => ({
+        id: favorite.id,
+        stickerId: favorite.stickerId,
+        createdAt: favorite.createdAt,
+        updatedAt: favorite.updatedAt,
+        sticker: {
+          id: favorite.sticker.id,
+          name: favorite.sticker.name,
+          createdAt: favorite.sticker.createdAt,
+          updatedAt: favorite.sticker.updatedAt,
+          categoryId: favorite.sticker.categoryId,
+          subnicheId: favorite.sticker.subnicheId,
+          attachment: {
+            id: favorite.sticker.attachment.id,
+            filename: favorite.sticker.attachment.filename,
+            filetype: favorite.sticker.attachment.filetype,
+            filesize: favorite.sticker.attachment.filesize,
+            url: favorite.sticker.attachment.url,
+            createdAt: favorite.sticker.attachment.createdAt,
+          },
+        },
+      }));
+
+      res.status(httpStatus.OK).json({
+        page,
+        pageSize,
+        total: totalFavorites,
+        totalPages: Math.ceil(totalFavorites / pageSize),
+        favorites: simplifiedFavorites,
+      });
     } catch (error) {
+      console.log("error", error);
       res
         .status(httpStatus.INTERNAL_SERVER_ERROR)
         .json({ error: "Erro ao buscar figurinhas favoritas." });

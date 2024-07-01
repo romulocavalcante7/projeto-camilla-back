@@ -4,6 +4,7 @@ import userRoute from "./user.route";
 import webhookRoute from "./webhook.route";
 import uploadRoutes from "./upload.route";
 import categoryRoutes from "./category.route";
+import subnichesRoutes from "./subniche.route";
 import stickerRoutes from "./sticker.route";
 import favoriteStickerRoutes from "./favoriteSticker.route";
 import docsRoute from "./docs.route";
@@ -33,7 +34,11 @@ const defaultRoutes = [
     route: categoryRoutes,
   },
   {
-    path: "/sticker",
+    path: "/subniches",
+    route: subnichesRoutes,
+  },
+  {
+    path: "/stickers",
     route: stickerRoutes,
   },
   {

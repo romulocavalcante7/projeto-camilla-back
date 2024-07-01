@@ -34,6 +34,12 @@ const getStickerById = {
   }),
 };
 
+const getStickersBySubnicheId = {
+  params: Joi.object().keys({
+    subnicheId: Joi.string().uuid().required(),
+  }),
+};
+
 const updateSticker = {
   params: Joi.object().keys({
     stickerId: Joi.string().uuid().required(),
@@ -67,6 +73,7 @@ export default {
   createSticker,
   getAllStickers,
   getStickerById,
+  getStickersBySubnicheId,
   updateSticker,
   deleteSticker,
 };
