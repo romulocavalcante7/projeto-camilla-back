@@ -21,7 +21,7 @@ model User {
   avatar          Attachment?
   orders          Order[]
   favorites       FavoriteSticker[]
-  Sticker         Sticker[]
+  stickers        Sticker[]
 }
 
 model Token {
@@ -36,29 +36,34 @@ model Token {
 }
 
 model Attachment {
-  id                 String                  @id @default(uuid())
-  filename           String
-  filetype           String
-  filesize           Int
-  url                String
-  createdAt          DateTime                @default(now())
-  user               User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId             String?                 @unique
-  stickers           Sticker[]
-  translations       AttachmentTranslation[]
-  StickerTranslation StickerTranslation[]
+  id                  String               @id @default(uuid())
+  filename            String
+  filetype            String
+  filesize            Int
+  url                 String
+  createdAt           DateTime             @default(now())
+  user                User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String?              @unique
+  stickers            Sticker[]
+  categories          CategoryAttachment[]
+  subniches           SubnicheAttachment[]
+  stickerTranslations StickerTranslation[]
+  subnicheAttachment  Subniche? 
+  categoryAttachment  Category?
 }
 
-model AttachmentTranslation {
-  id           String   @id @default(uuid())
-  attachmentId String
-  language     Language
-  filename     String
-  url          String
+model CategoryAttachment {
+  id           String     @id @default(uuid())
+  categoryId   String
+  attachment   Attachment @relation(fields: [attachmentId], references: [id])
+  attachmentId String     @unique
+}
 
-  attachment Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
-
-  @@unique([attachmentId, language])
+model SubnicheAttachment {
+  id           String     @id @default(uuid())
+  subnicheId   String
+  attachment   Attachment @relation(fields: [attachmentId], references: [id])
+  attachmentId String     @unique
 }
 
 model Sticker {
@@ -84,10 +89,10 @@ model StickerTranslation {
   stickerId    String
   language     Language
   name         String?
-  attachmentId String
+  attachmentId String?
 
-  sticker    Sticker    @relation(fields: [stickerId], references: [id], onDelete: Cascade)
-  attachment Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  sticker    Sticker     @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+  attachment Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull) // Relação opcional com Attachment
 
   @@unique([stickerId, language])
 }
@@ -99,6 +104,8 @@ model Category {
   stickers     Sticker[]
   subniches    Subniche[]
   translations CategoryTranslation[]
+  attachment   Attachment?           @relation(fields: [attachmentId], references: [id]) // Campo adicionado para relação com Attachment
+  attachmentId String?               @unique
 }
 
 model CategoryTranslation {
@@ -121,6 +128,8 @@ model Subniche {
 
   category     Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   translations SubnicheTranslation[]
+  attachment   Attachment?           @relation(fields: [attachmentId], references: [id]) // Campo adicionado para relação com Attachment
+  attachmentId String?               @unique
 }
 
 model SubnicheTranslation {
@@ -143,25 +152,6 @@ model FavoriteSticker {
   sticker Sticker @relation(fields: [stickerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stickerId])
-}
-
-enum TokenType {
-  ACCESS
-  REFRESH
-  RESET_PASSWORD
-  VERIFY_EMAIL
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
-enum Language {
-  EN
-  PT
-  ES
-  // Adicione outros idiomas conforme necessário
 }
 
 model Order {
@@ -274,4 +264,22 @@ model Charge {
   createdAt       DateTime     @default(now())
   subscriptionId  String
   subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Language {
+  EN
+  PT
+  ES
 }
