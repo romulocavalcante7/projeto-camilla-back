@@ -7,6 +7,7 @@ import prisma from "../client";
 const favoriteStickerController = {
   getAllFavoriteStickers: async (req: Request, res: Response) => {
     const userId = req.user?.id;
+    const { search } = req.query;
 
     if (!userId) {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: "Usuário não autenticado." });
@@ -17,17 +18,36 @@ const favoriteStickerController = {
 
     try {
       const totalFavorites = await prisma.favoriteSticker.count({
-        where: { userId },
+        where: {
+          userId,
+          sticker: {
+            name: {
+              contains: (search as string) || "",
+              mode: "insensitive",
+            },
+          },
+        },
       });
 
       const favorites = await prisma.favoriteSticker.findMany({
-        where: { userId },
+        where: {
+          userId,
+          sticker: {
+            name: {
+              contains: (search as string) || "",
+              mode: "insensitive",
+            },
+          },
+        },
         include: {
           sticker: {
             include: {
               attachment: true,
             },
           },
+        },
+        orderBy: {
+          createdAt: "desc",
         },
         skip: (page - 1) * pageSize,
         take: pageSize,

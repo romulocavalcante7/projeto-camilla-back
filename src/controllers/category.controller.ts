@@ -25,7 +25,7 @@ const getAllCategories = async (req: Request, res: Response) => {
     const totalCount = await prisma.category.count({
       where: {
         name: {
-          contains: search?.toString() || "",
+          contains: (search as string) || "",
           mode: "insensitive",
         },
       },
@@ -40,7 +40,7 @@ const getAllCategories = async (req: Request, res: Response) => {
       },
       where: {
         name: {
-          contains: search?.toString() || "",
+          contains: (search as string) || "",
           mode: "insensitive",
         },
       },

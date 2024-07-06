@@ -44,6 +44,7 @@ const getAllSubniches = async (req: Request, res: Response) => {
 
 const getSubnichesByCategoryId = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
+  const { search } = req.query;
 
   try {
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -52,13 +53,25 @@ const getSubnichesByCategoryId = async (req: Request, res: Response) => {
     const totalCount = await prisma.subniche.count({
       where: {
         categoryId,
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
       },
     });
 
     const subniches = await prisma.subniche.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
       where: {
         categoryId,
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
       },
+
       include: {
         category: true,
         attachment: true,
@@ -67,11 +80,11 @@ const getSubnichesByCategoryId = async (req: Request, res: Response) => {
       take: pageSize,
     });
 
-    if (subniches.length === 0) {
-      return res.status(httpStatus.NOT_FOUND).json({
-        message: "Nenhum subnicho encontrado para esta categoria.",
-      });
-    }
+    // if (subniches.length === 0) {
+    //   return res.status(httpStatus.NOT_FOUND).json({
+    //     message: "Nenhum subnicho encontrado para esta categoria.",
+    //   });
+    // }
 
     const totalPages = Math.ceil(totalCount / pageSize);
 

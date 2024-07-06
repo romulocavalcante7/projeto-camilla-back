@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response } from "express";
 import httpStatus from "http-status";
@@ -74,29 +75,51 @@ const getStickerById = async (req: Request, res: Response) => {
 
 const getStickersBySubnicheId = async (req: Request, res: Response) => {
   const { subnicheId } = req.params;
+  const { search } = req.query;
   //@ts-ignore
-  const userId = req.user.id; // Supondo que você tenha o ID do usuário autenticado disponível em req.user.id
+  const userId = req.user.id;
+
+  if (!userId) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: "Usuário não autenticado." });
+  }
+
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
 
   try {
-    // Consulta inicial para obter os stickers do subnicho
+    const totalStickers = await prisma.sticker.count({
+      where: {
+        subnicheId,
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
+      },
+    });
+
     const stickers = await prisma.sticker.findMany({
       where: {
         subnicheId,
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
       },
       include: {
         attachment: true,
         translations: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
     // Consulta para obter os IDs dos stickers favoritos do usuário
     const favoriteStickers = await prisma.favoriteSticker.findMany({
-      where: {
-        userId,
-      },
-      select: {
-        stickerId: true,
-      },
+      where: { userId },
+      select: { stickerId: true },
     });
 
     const favoriteStickerIds = favoriteStickers.map((fav) => fav.stickerId);
@@ -107,7 +130,13 @@ const getStickersBySubnicheId = async (req: Request, res: Response) => {
       isFavorite: favoriteStickerIds.includes(sticker.id),
     }));
 
-    res.status(httpStatus.OK).json(stickersWithFavorite);
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalStickers,
+      totalPages: Math.ceil(totalStickers / pageSize),
+      stickers: stickersWithFavorite,
+    });
   } catch (error) {
     console.error(error);
     res
