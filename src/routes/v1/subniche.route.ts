@@ -1,39 +1,61 @@
 import express from "express";
-// import auth from "../../middlewares/auth";
-// import validate from "../../middlewares/validate";
-// import { userValidation } from "../../validations";
-import { userController } from "../../controllers";
+import auth from "../../middlewares/auth";
+import validate from "../../middlewares/validate";
+import subnicheValidation from "../../validations/subniche.validation";
+import subnicheController from "../../controllers/subniche.controller";
 
 const router = express.Router();
 
-router.route("/webhook").post(userController.handleOrderApproved);
-// router
-//   .route("/")
-//   .post(auth("admin"), validate(userValidation.createUser), userController.createUser)
-//   .get(auth("getUsers"), validate(userValidation.getUsers), userController.getUsers);
+router
+  .route("/all")
+  .get(auth(), validate(subnicheValidation.getAllSubniches), subnicheController.getAllSubniches);
 
-// router
-//   .route("/:userId")
-//   .get(auth("getUsers"), validate(userValidation.getUser), userController.getUser)
-//   .patch(auth("admin"), validate(userValidation.updateUser), userController.updateUser)
-//   .delete(auth("admin"), validate(userValidation.deleteUser), userController.deleteUser);
+router
+  .route("/create")
+  .post(
+    auth("admin"),
+    validate(subnicheValidation.createSubniche),
+    subnicheController.createSubniche
+  );
+
+router
+  .route("/:subnicheId")
+  .get(auth(), validate(subnicheValidation.getSubnicheById), subnicheController.getSubnicheById)
+  .patch(
+    auth("admin"),
+    validate(subnicheValidation.updateSubniche),
+    subnicheController.updateSubniche
+  )
+  .delete(
+    auth("admin"),
+    validate(subnicheValidation.deleteSubniche),
+    subnicheController.deleteSubniche
+  );
+
+router
+  .route("/category/:categoryId")
+  .get(
+    auth(),
+    validate(subnicheValidation.getSubnichesByCategoryId),
+    subnicheController.getSubnichesByCategoryId
+  );
 
 export default router;
 
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: User management and retrieval
+ *   name: Subniches
+ *   description: Subniche management and retrieval
  */
 
 /**
  * @swagger
- * /users:
+ * /subniches/create:
  *   post:
- *     summary: Create a user
- *     description: Only admins can create other users.
- *     tags: [Users]
+ *     summary: Create a subniche
+ *     description: Only admins can create subniches.
+ *     tags: [Subniches]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -44,78 +66,58 @@ export default router;
  *             type: object
  *             required:
  *               - name
- *               - email
- *               - password
- *               - role
+ *               - categoryId
  *             properties:
  *               name:
  *                 type: string
- *               email:
+ *               categoryId:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
- *               role:
- *                  type: string
- *                  enum: [user, admin]
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: user
+ *               name: Example Subniche
+ *               categoryId: 123e4567-e89b-12d3-a456-426614174000
  *     responses:
  *       "201":
  *         description: Created
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
+ *                $ref: '#/components/schemas/Subniche'
  *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
+ *         $ref: '#/components/responses/BadRequest'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
- *
+ */
+
+/**
+ * @swagger
+ * /subniches/all:
  *   get:
- *     summary: Get all users
- *     description: Only admins can retrieve all users.
- *     tags: [Users]
+ *     summary: Get all subniches
+ *     description: Only admins can retrieve all subniches.
+ *     tags: [Subniches]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: User name
- *       - in: query
- *         name: role
- *         schema:
- *           type: string
- *         description: User role
- *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
- *         description: sort by query in the form of field:desc/asc (ex. name:asc)
+ *         description: Sort by query in the form of field:desc/asc (ex. name:asc)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           minimum: 1
  *         default: 10
- *         description: Maximum number of users
+ *         description: Maximum number of subniches
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           minimum: 1
- *           default: 1
+ *         default: 1
  *         description: Page number
  *     responses:
  *       "200":
@@ -128,7 +130,7 @@ export default router;
  *                 results:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/User'
+ *                     $ref: '#/components/schemas/Subniche'
  *                 page:
  *                   type: integer
  *                   example: 1
@@ -149,27 +151,27 @@ export default router;
 
 /**
  * @swagger
- * /users/{id}:
+ * /subniches/{subnicheId}:
  *   get:
- *     summary: Get a user
- *     description: Logged in users can fetch only their own user information. Only admins can fetch other users.
- *     tags: [Users]
+ *     summary: Get a subniche
+ *     description: Only admins can fetch a subniche by ID.
+ *     tags: [Subniches]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: subnicheId
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *         description: Subniche id
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
+ *                $ref: '#/components/schemas/Subniche'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -178,18 +180,18 @@ export default router;
  *         $ref: '#/components/responses/NotFound'
  *
  *   patch:
- *     summary: Update a user
- *     description: Logged in users can only update their own information. Only admins can update other users.
- *     tags: [Users]
+ *     summary: Update a subniche
+ *     description: Only admins can update subniches.
+ *     tags: [Subniches]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: subnicheId
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *         description: Subniche id
  *     requestBody:
  *       required: true
  *       content:
@@ -199,28 +201,20 @@ export default router;
  *             properties:
  *               name:
  *                 type: string
- *               email:
+ *               categoryId:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
+ *               name: Updated Subniche Name
+ *               categoryId: 123e4567-e89b-12d3-a456-426614174000
  *     responses:
  *       "200":
  *         description: OK
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/User'
+ *                $ref: '#/components/schemas/Subniche'
  *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
+ *         $ref: '#/components/responses/BadRequest'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -229,21 +223,54 @@ export default router;
  *         $ref: '#/components/responses/NotFound'
  *
  *   delete:
- *     summary: Delete a user
- *     description: Logged in users can delete only themselves. Only admins can delete other users.
- *     tags: [Users]
+ *     summary: Delete a subniche
+ *     description: Only admins can delete subniches.
+ *     tags: [Subniches]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: subnicheId
  *         required: true
  *         schema:
  *           type: string
- *         description: User id
+ *         description: Subniche id
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *       "404":
+ *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /subniches/category/{categoryId}:
+ *   get:
+ *     summary: Get all subniches by category ID
+ *     description: Retrieve all subniches that belong to a specific category.
+ *     tags: [Subniches]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: categoryId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category id
  *     responses:
  *       "200":
- *         description: No content
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Subniche'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
