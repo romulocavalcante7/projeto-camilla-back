@@ -42,13 +42,14 @@ model Attachment {
   filesize            Int
   url                 String
   createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   user                User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId              String?              @unique
   stickers            Sticker[]
   categories          CategoryAttachment[]
   subniches           SubnicheAttachment[]
   stickerTranslations StickerTranslation[]
-  subnicheAttachment  Subniche? 
+  subnicheAttachment  Subniche?
   categoryAttachment  Category?
 }
 
@@ -71,7 +72,7 @@ model Sticker {
   name         String
   attachmentId String
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   categoryId   String
   subnicheId   String?
   userId       String?
@@ -85,14 +86,15 @@ model Sticker {
 }
 
 model StickerTranslation {
-  id           String   @id @default(uuid())
+  id           String      @id @default(uuid())
   stickerId    String
   language     Language
   name         String?
   attachmentId String?
-
-  sticker    Sticker     @relation(fields: [stickerId], references: [id], onDelete: Cascade)
-  attachment Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull) // Relação opcional com Attachment
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  sticker      Sticker     @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+  attachment   Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull) // Relação opcional com Attachment
 
   @@unique([stickerId, language])
 }
@@ -101,6 +103,7 @@ model Category {
   id           String                @id @default(uuid())
   name         String
   createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
   stickers     Sticker[]
   subniches    Subniche[]
   translations CategoryTranslation[]
@@ -113,19 +116,20 @@ model CategoryTranslation {
   categoryId String
   language   Language
   name       String
-
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, language])
 }
 
 model Subniche {
-  id         String    @id @default(uuid())
-  name       String
-  categoryId String
-  createdAt  DateTime  @default(now())
-  stickers   Sticker[]
-
+  id           String                @id @default(uuid())
+  name         String
+  categoryId   String
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  stickers     Sticker[]
   category     Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   translations SubnicheTranslation[]
   attachment   Attachment?           @relation(fields: [attachmentId], references: [id]) // Campo adicionado para relação com Attachment
@@ -137,19 +141,21 @@ model SubnicheTranslation {
   subnicheId String
   language   Language
   name       String
-
-  subniche Subniche @relation(fields: [subnicheId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  subniche   Subniche @relation(fields: [subnicheId], references: [id], onDelete: Cascade)
 
   @@unique([subnicheId, language])
 }
 
 model FavoriteSticker {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   stickerId String
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sticker Sticker @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sticker   Sticker  @relation(fields: [stickerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stickerId])
 }
@@ -192,20 +198,24 @@ model Order {
 }
 
 model Product {
-  id     String  @id @default(uuid())
-  name   String
-  orders Order[]
+  id        String   @id @default(uuid())
+  name      String
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Customer {
-  id        String  @id @default(uuid())
-  email     String  @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
   fullName  String
   firstName String
   mobile    String
   cpf       String
   ip        String
   orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Commission {
@@ -220,6 +230,8 @@ model Commission {
   depositDate          DateTime?
   commissionedStores   CommissionedStore[]
   orders               Order[]
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 }
 
 model CommissionedStore {
@@ -228,6 +240,8 @@ model CommissionedStore {
   customName   String
   email        String
   value        Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   commissionId String
   commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
 }
@@ -240,8 +254,9 @@ model Subscription {
   planId      String
   charges     Charge[]
   orders      Order[]
-
-  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
 }
 
 model Plan {
@@ -250,6 +265,8 @@ model Plan {
   frequency     String
   qtyCharges    Int
   subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Charge {
@@ -262,6 +279,7 @@ model Charge {
   cardLastDigits  String
   cardFirstDigits String
   createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   subscriptionId  String
   subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 }
