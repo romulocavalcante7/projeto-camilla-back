@@ -32,16 +32,68 @@ const createSticker = async (req: Request, res: Response) => {
 };
 
 const getAllStickers = async (req: Request, res: Response) => {
+  const { search } = req.query;
+  //@ts-ignore
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: "Usuário não autenticado." });
+  }
+
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+
   try {
+    const totalStickers = await prisma.sticker.count({
+      where: {
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
+      },
+    });
+
     const stickers = await prisma.sticker.findMany({
+      where: {
+        name: {
+          contains: (search as string) || "",
+          mode: "insensitive",
+        },
+      },
       include: {
         category: true,
         attachment: true,
         translations: true,
         subniche: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
-    res.status(httpStatus.OK).json(stickers);
+
+    // Consulta para obter os IDs dos stickers favoritos do usuário
+    const favoriteStickers = await prisma.favoriteSticker.findMany({
+      where: { userId },
+      select: { stickerId: true },
+    });
+
+    const favoriteStickerIds = favoriteStickers.map((fav) => fav.stickerId);
+
+    // Adicionando o campo isFavorite a cada sticker
+    const stickersWithFavorite = stickers.map((sticker) => ({
+      ...sticker,
+      isFavorite: favoriteStickerIds.includes(sticker.id),
+    }));
+
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalStickers,
+      totalPages: Math.ceil(totalStickers / pageSize),
+      stickers: stickersWithFavorite,
+    });
   } catch (error) {
     console.error(error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar figurinhas." });
