@@ -19,14 +19,7 @@ const createSticker = {
   }),
 };
 
-const getAllStickers = {
-  query: Joi.object().keys({
-    search: Joi.string(),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-  }),
-};
+const getAllStickers = {};
 
 const getStickerById = {
   params: Joi.object().keys({
