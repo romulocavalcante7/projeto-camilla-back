@@ -3,12 +3,13 @@ import httpStatus from "http-status";
 import prisma from "../client";
 
 const createCategory = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, attachmentId } = req.body;
 
   try {
     const category = await prisma.category.create({
       data: {
         name,
+        attachmentId,
       },
     });
 
@@ -68,13 +69,15 @@ const getAllCategories = async (req: Request, res: Response) => {
 };
 
 const getCategoryById = async (req: Request, res: Response) => {
-  console.log("req.params", req.params);
   const { categoryId } = req.params;
 
   try {
     const category = await prisma.category.findUnique({
       where: {
         id: categoryId,
+      },
+      include: {
+        attachment: true,
       },
     });
 
@@ -90,7 +93,7 @@ const getCategoryById = async (req: Request, res: Response) => {
 
 const updateCategory = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
-  const { name } = req.body;
+  const { name, attachmentId } = req.body;
 
   try {
     const updatedCategory = await prisma.category.update({
@@ -99,6 +102,7 @@ const updateCategory = async (req: Request, res: Response) => {
       },
       data: {
         name,
+        attachmentId,
       },
     });
 

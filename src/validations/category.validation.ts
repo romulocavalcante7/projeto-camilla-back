@@ -3,19 +3,22 @@ import Joi from "joi";
 const createCategory = {
   body: Joi.object().keys({
     name: Joi.string().required(),
+    attachmentId: Joi.string().optional(),
   }),
 };
 
 const getAllCategories = {
-  // query: Joi.object().keys({
-  //   search: Joi.string(),
-  //   sortBy: Joi.string(),
-  // }),
+  query: Joi.object().keys({
+    search: Joi.string(),
+    page: Joi.string(),
+    pageSize: Joi.string(),
+  }),
 };
 
 const getCategoryById = {
   params: Joi.object().keys({
     categoryId: Joi.string().uuid().required(),
+    attachmentId: Joi.string().optional(),
   }),
 };
 
@@ -25,7 +28,8 @@ const updateCategory = {
   }),
   body: Joi.object()
     .keys({
-      name: Joi.string(),
+      name: Joi.string().optional(),
+      attachmentId: Joi.string().uuid().optional(),
     })
     .min(1),
 };
