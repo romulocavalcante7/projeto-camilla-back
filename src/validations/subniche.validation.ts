@@ -4,15 +4,15 @@ const createSubniche = {
   body: Joi.object().keys({
     name: Joi.string().required(),
     categoryId: Joi.string().uuid().required(),
+    attachmentId: Joi.string().uuid().optional(),
   }),
 };
 
 const getAllSubniches = {
   query: Joi.object().keys({
     search: Joi.string(),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    page: Joi.string(),
+    pageSize: Joi.string(),
   }),
 };
 
@@ -30,6 +30,7 @@ const updateSubniche = {
     .keys({
       name: Joi.string(),
       categoryId: Joi.string().uuid(),
+      attachmentId: Joi.string().uuid().optional(),
     })
     .min(1),
 };
