@@ -3,13 +3,14 @@ import httpStatus from "http-status";
 import prisma from "../client";
 
 const createSubniche = async (req: Request, res: Response) => {
-  const { name, categoryId } = req.body;
+  const { name, categoryId, attachmentId } = req.body;
 
   try {
     const subniche = await prisma.subniche.create({
       data: {
         name,
         categoryId,
+        attachmentId,
       },
     });
 
@@ -20,8 +21,21 @@ const createSubniche = async (req: Request, res: Response) => {
 };
 
 const getAllSubniches = async (req: Request, res: Response) => {
-  const { search, sortBy, limit, page } = req.query;
+  const { search } = req.query;
+
   try {
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+
+    const totalCount = await prisma.subniche.count({
+      where: {
+        name: {
+          contains: search?.toString() || "",
+          mode: "insensitive",
+        },
+      },
+    });
+
     const subniches = await prisma.subniche.findMany({
       orderBy: {
         createdAt: "desc",
@@ -35,9 +49,21 @@ const getAllSubniches = async (req: Request, res: Response) => {
       include: {
         category: true,
       },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
-    res.status(httpStatus.OK).json(subniches);
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalCount,
+      totalPages,
+      subniches,
+    });
   } catch (error) {
+    console.error("Erro ao buscar subnichos:", error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar subnichos." });
   }
 };
@@ -79,12 +105,6 @@ const getSubnichesByCategoryId = async (req: Request, res: Response) => {
       skip: (page - 1) * pageSize,
       take: pageSize,
     });
-
-    // if (subniches.length === 0) {
-    //   return res.status(httpStatus.NOT_FOUND).json({
-    //     message: "Nenhum subnicho encontrado para esta categoria.",
-    //   });
-    // }
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -140,6 +160,7 @@ const getSubnicheById = async (req: Request, res: Response) => {
       },
       include: {
         category: true,
+        attachment: true,
       },
     });
 
@@ -155,7 +176,7 @@ const getSubnicheById = async (req: Request, res: Response) => {
 
 const updateSubniche = async (req: Request, res: Response) => {
   const { subnicheId } = req.params;
-  const { name, categoryId } = req.body;
+  const { name, categoryId, attachmentId } = req.body;
 
   try {
     const updatedSubniche = await prisma.subniche.update({
@@ -165,6 +186,7 @@ const updateSubniche = async (req: Request, res: Response) => {
       data: {
         name,
         categoryId,
+        attachmentId,
       },
     });
 

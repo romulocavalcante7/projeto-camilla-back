@@ -5,7 +5,6 @@ import uploadService from "../services/upload.service";
 import prisma from "../client";
 
 const addFile = catchAsync(async (req: Request, res: Response) => {
-  console.log("CHEGOU O ARQUIVO", req.file);
   const file = req.file as Express.Multer.File;
   if (!file) {
     return res.status(httpStatus.BAD_REQUEST).json({ message: "No file provided" });
@@ -17,8 +16,6 @@ const addFile = catchAsync(async (req: Request, res: Response) => {
       filetype,
       filesize,
       url,
-      // Se você tiver um usuário associado ao arquivo, pode conectar aqui
-      // user: { connect: { id: userId } }
     },
   });
   res.status(httpStatus.CREATED).json(savedAttachment);
@@ -33,7 +30,6 @@ const addMultiplesFiles = catchAsync(async (req: Request, res: Response) => {
   }
   const uploadedFiles = await uploadService.uploadFiles(files); // Chama o serviço de upload e captura as informações
 
-  // Salvar informações dos arquivos no banco de dados
   const savedFiles = await Promise.all(
     uploadedFiles.map(async (fileInfo) => {
       const savedFile = await prisma.attachment.create({
@@ -42,8 +38,6 @@ const addMultiplesFiles = catchAsync(async (req: Request, res: Response) => {
           filetype: fileInfo.filetype,
           filesize: fileInfo.filesize,
           url: fileInfo.url,
-          // Se houver um usuário associado ao arquivo, você pode conectar aqui
-          // user: { connect: { id: userId } }
         },
       });
       return savedFile;
