@@ -48,6 +48,7 @@ const getAllSubniches = async (req: Request, res: Response) => {
       },
       include: {
         category: true,
+        attachment: true,
       },
       skip: (page - 1) * pageSize,
       take: pageSize,
