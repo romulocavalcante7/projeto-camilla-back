@@ -69,7 +69,7 @@ model SubnicheAttachment {
 
 model Sticker {
   id           String   @id @default(uuid())
-  name         String
+  name         String?
   attachmentId String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -32,7 +32,6 @@ const createSticker = async (req: Request, res: Response) => {
 };
 
 const getAllStickers = async (req: Request, res: Response) => {
-  const { search } = req.query;
   //@ts-ignore
   const userId = req.user?.id;
 
@@ -44,22 +43,9 @@ const getAllStickers = async (req: Request, res: Response) => {
   const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
 
   try {
-    const totalStickers = await prisma.sticker.count({
-      where: {
-        name: {
-          contains: (search as string) || "",
-          mode: "insensitive",
-        },
-      },
-    });
+    const totalStickers = await prisma.sticker.count();
 
     const stickers = await prisma.sticker.findMany({
-      where: {
-        name: {
-          contains: (search as string) || "",
-          mode: "insensitive",
-        },
-      },
       include: {
         category: true,
         attachment: true,
@@ -127,7 +113,6 @@ const getStickerById = async (req: Request, res: Response) => {
 
 const getStickersBySubnicheId = async (req: Request, res: Response) => {
   const { subnicheId } = req.params;
-  const { search } = req.query;
   //@ts-ignore
   const userId = req.user.id;
 
@@ -142,20 +127,12 @@ const getStickersBySubnicheId = async (req: Request, res: Response) => {
     const totalStickers = await prisma.sticker.count({
       where: {
         subnicheId,
-        name: {
-          contains: (search as string) || "",
-          mode: "insensitive",
-        },
       },
     });
 
     const stickers = await prisma.sticker.findMany({
       where: {
         subnicheId,
-        name: {
-          contains: (search as string) || "",
-          mode: "insensitive",
-        },
       },
       include: {
         attachment: true,
