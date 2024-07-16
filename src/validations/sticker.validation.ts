@@ -2,7 +2,7 @@ import Joi from "joi";
 
 const createSticker = {
   body: Joi.object().keys({
-    name: Joi.string().optional(),
+    name: Joi.string().empty(""),
     attachmentId: Joi.string().uuid().required(),
     categoryId: Joi.string().uuid().required(),
     subnicheId: Joi.string().uuid().allow(null).optional(),
@@ -39,7 +39,7 @@ const updateSticker = {
   }),
   body: Joi.object()
     .keys({
-      name: Joi.string().optional(),
+      name: Joi.string().empty(""),
       attachmentId: Joi.string().uuid().optional(),
       categoryId: Joi.string().uuid().optional(),
       subnicheId: Joi.string().uuid().optional(),
