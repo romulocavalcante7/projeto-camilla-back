@@ -22,6 +22,21 @@ const createCategory = async (req: Request, res: Response) => {
 const getAllCategories = async (req: Request, res: Response) => {
   const { search } = req.query;
 
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+  const sortField = (req.query.sortField as string) || "createdAt";
+  const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+
+  let orderBy: any = {};
+
+  if (sortField === "createdAt") {
+    orderBy = {
+      createdAt: sortOrder,
+    };
+  } else {
+    orderBy[sortField] = sortOrder;
+  }
+
   try {
     const totalCount = await prisma.category.count({
       where: {
@@ -32,13 +47,8 @@ const getAllCategories = async (req: Request, res: Response) => {
       },
     });
 
-    const page = parseInt(req.query.page as string, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
-
     const categories = await prisma.category.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: orderBy,
       where: {
         name: {
           contains: (search as string) || "",
