@@ -41,7 +41,29 @@ const getAllStickers = async (req: Request, res: Response) => {
 
   const page = parseInt(req.query.page as string, 10) || 1;
   const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
-  const search = req.query.search as string;
+  const search = (req.query.search as string) || "";
+  const sortField = (req.query.sortField as string) || "createdAt";
+  const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+
+  let orderBy: any = {};
+
+  if (sortField === "category") {
+    orderBy = {
+      subniche: {
+        category: {
+          name: sortOrder,
+        },
+      },
+    };
+  } else if (sortField === "subniche") {
+    orderBy = {
+      subniche: {
+        name: sortOrder,
+      },
+    };
+  } else {
+    orderBy[sortField] = sortOrder;
+  }
 
   try {
     const totalStickers = await prisma.sticker.count({
@@ -101,14 +123,11 @@ const getAllStickers = async (req: Request, res: Response) => {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
     });
 
-    // Consulta para obter os IDs dos stickers favoritos do usuário
     const favoriteStickers = await prisma.favoriteSticker.findMany({
       where: { userId },
       select: { stickerId: true },
@@ -116,7 +135,6 @@ const getAllStickers = async (req: Request, res: Response) => {
 
     const favoriteStickerIds = favoriteStickers.map((fav) => fav.stickerId);
 
-    // Adicionando o campo isFavorite a cada sticker
     const stickersWithFavorite = stickers.map((sticker) => ({
       ...sticker,
       isFavorite: favoriteStickerIds.includes(sticker.id),
