@@ -48,10 +48,12 @@ const getAllStickers = async (req: Request, res: Response) => {
       where: {
         OR: [
           {
-            category: {
-              name: {
-                contains: search,
-                mode: "insensitive",
+            subniche: {
+              category: {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
               },
             },
           },
