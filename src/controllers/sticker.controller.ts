@@ -41,16 +41,63 @@ const getAllStickers = async (req: Request, res: Response) => {
 
   const page = parseInt(req.query.page as string, 10) || 1;
   const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+  const search = req.query.search as string;
 
   try {
-    const totalStickers = await prisma.sticker.count();
+    const totalStickers = await prisma.sticker.count({
+      where: {
+        OR: [
+          {
+            category: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            subniche: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      },
+    });
 
     const stickers = await prisma.sticker.findMany({
+      where: {
+        OR: [
+          {
+            subniche: {
+              category: {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+          {
+            subniche: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      },
       include: {
-        category: true,
         attachment: true,
         translations: true,
-        subniche: true,
+        subniche: {
+          include: {
+            category: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
