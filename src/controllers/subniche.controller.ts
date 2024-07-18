@@ -23,28 +23,68 @@ const createSubniche = async (req: Request, res: Response) => {
 const getAllSubniches = async (req: Request, res: Response) => {
   const { search } = req.query;
 
-  try {
-    const page = parseInt(req.query.page as string, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+  const sortField = (req.query.sortField as string) || "createdAt";
+  const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
 
+  let orderBy: any = {};
+
+  if (sortField === "createdAt") {
+    orderBy = {
+      createdAt: sortOrder,
+    };
+  } else if (sortField === "category") {
+    orderBy = {
+      category: {
+        name: sortOrder,
+      },
+    };
+  } else {
+    orderBy[sortField] = sortOrder;
+  }
+
+  try {
     const totalCount = await prisma.subniche.count({
       where: {
-        name: {
-          contains: search?.toString() || "",
-          mode: "insensitive",
-        },
+        OR: [
+          {
+            category: {
+              name: {
+                contains: search?.toString() || "",
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            name: {
+              contains: search?.toString() || "",
+              mode: "insensitive",
+            },
+          },
+        ],
       },
     });
 
     const subniches = await prisma.subniche.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: orderBy,
       where: {
-        name: {
-          contains: search?.toString() || "",
-          mode: "insensitive",
-        },
+        OR: [
+          {
+            category: {
+              name: {
+                contains: search?.toString() || "",
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            name: {
+              contains: search?.toString() || "",
+              mode: "insensitive",
+            },
+          },
+        ],
       },
       include: {
         category: true,

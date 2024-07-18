@@ -10,9 +10,11 @@ const createSubniche = {
 
 const getAllSubniches = {
   query: Joi.object().keys({
-    search: Joi.string(),
-    page: Joi.string(),
-    pageSize: Joi.string(),
+    search: Joi.string().optional(),
+    page: Joi.string().optional(),
+    pageSize: Joi.string().optional(),
+    sortField: Joi.string().optional(),
+    sortOrder: Joi.string().optional(),
   }),
 };
 
