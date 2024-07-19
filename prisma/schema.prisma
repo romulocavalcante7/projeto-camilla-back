@@ -128,6 +128,8 @@ model CategoryTranslation {
 model Subniche {
   id           String                @id @default(uuid())
   name         String
+  isImportant  Boolean               @default(false)
+  displayOrder Int?
   categoryId   String
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
