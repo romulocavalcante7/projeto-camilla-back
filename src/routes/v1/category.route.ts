@@ -11,6 +11,10 @@ router
   .get(auth(), validate(categoryValidation.getAllCategories), categoryController.getAllCategories);
 
 router.route("/total").get(auth(), categoryController.getTotalCategories);
+router.route("/important").get(auth(), categoryController.getImportantCategories);
+router.route("/markImportant").post(auth(), categoryController.markCategoryAsImportant);
+router.route("/removeImportant").post(auth(), categoryController.removeCategoryImportant);
+router.route("/setOrder").post(auth(), categoryController.setCategoryDisplayOrder);
 
 router
   .route("/create")

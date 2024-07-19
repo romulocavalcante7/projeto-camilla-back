@@ -14,6 +14,7 @@ const getAllCategories = {
     pageSize: Joi.string().optional(),
     sortField: Joi.string().optional(),
     sortOrder: Joi.string().optional(),
+    importantFirst: Joi.string().optional(),
   }),
 };
 
