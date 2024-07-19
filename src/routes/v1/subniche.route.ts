@@ -10,6 +10,8 @@ router
   .route("/all")
   .get(auth(), validate(subnicheValidation.getAllSubniches), subnicheController.getAllSubniches);
 
+router.route("/total").get(auth(), subnicheController.getTotalSubniches);
+
 router
   .route("/create")
   .post(

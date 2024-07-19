@@ -10,6 +10,8 @@ router
   .route("/all")
   .get(auth(), validate(categoryValidation.getAllCategories), categoryController.getAllCategories);
 
+router.route("/total").get(auth(), categoryController.getTotalCategories);
+
 router
   .route("/create")
   .post(

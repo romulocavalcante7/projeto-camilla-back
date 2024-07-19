@@ -78,6 +78,18 @@ const getAllCategories = async (req: Request, res: Response) => {
   }
 };
 
+const getTotalCategories = async (req: Request, res: Response) => {
+  try {
+    const totalCount = await prisma.category.count();
+    res.status(httpStatus.OK).json({
+      total: totalCount,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar subnichos:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar subnichos." });
+  }
+};
+
 const getCategoryById = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
 
@@ -141,6 +153,7 @@ const deleteCategory = async (req: Request, res: Response) => {
 export default {
   createCategory,
   getAllCategories,
+  getTotalCategories,
   getCategoryById,
   updateCategory,
   deleteCategory,
