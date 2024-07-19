@@ -10,6 +10,8 @@ router
   .route("/all")
   .get(auth(), validate(stickerValidation.getAllStickers), stickerController.getAllStickers);
 
+router.route("/total").get(auth(), stickerController.getTotalStickers);
+
 router
   .route("/create")
   .post(auth("admin"), validate(stickerValidation.createSticker), stickerController.createSticker);

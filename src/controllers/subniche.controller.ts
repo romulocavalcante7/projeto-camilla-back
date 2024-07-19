@@ -109,6 +109,18 @@ const getAllSubniches = async (req: Request, res: Response) => {
   }
 };
 
+const getTotalSubniches = async (req: Request, res: Response) => {
+  try {
+    const totalCount = await prisma.subniche.count();
+    res.status(httpStatus.OK).json({
+      total: totalCount,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar subnichos:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar subnichos." });
+  }
+};
+
 const getSubnichesByCategoryId = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
   const { search } = req.query;
@@ -256,6 +268,7 @@ const deleteSubniche = async (req: Request, res: Response) => {
 export default {
   createSubniche,
   getAllSubniches,
+  getTotalSubniches,
   getSubnichesByCategoryId,
   getStickersBySubnicheId,
   getSubnicheById,

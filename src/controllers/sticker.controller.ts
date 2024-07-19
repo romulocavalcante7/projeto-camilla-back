@@ -153,6 +153,18 @@ const getAllStickers = async (req: Request, res: Response) => {
   }
 };
 
+const getTotalStickers = async (req: Request, res: Response) => {
+  try {
+    const totalCount = await prisma.sticker.count();
+    res.status(httpStatus.OK).json({
+      total: totalCount,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar subnichos:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar subnichos." });
+  }
+};
+
 const getStickerById = async (req: Request, res: Response) => {
   const { stickerId } = req.params;
 
@@ -293,6 +305,7 @@ const deleteSticker = async (req: Request, res: Response) => {
 export default {
   createSticker,
   getAllStickers,
+  getTotalStickers,
   getStickerById,
   getStickersBySubnicheId,
   updateSticker,
