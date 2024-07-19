@@ -21,7 +21,7 @@ const createSubniche = async (req: Request, res: Response) => {
 };
 
 const getAllSubniches = async (req: Request, res: Response) => {
-  const { search } = req.query;
+  const { search, importantFirst } = req.query;
 
   const page = parseInt(req.query.page as string, 10) || 1;
   const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
@@ -42,6 +42,14 @@ const getAllSubniches = async (req: Request, res: Response) => {
     };
   } else {
     orderBy[sortField] = sortOrder;
+  }
+
+  let orderArray: any[] = [];
+
+  if (importantFirst === "true") {
+    orderArray = [{ isImportant: "desc" }, { displayOrder: "asc" }, orderBy];
+  } else {
+    orderArray = [orderBy];
   }
 
   try {
@@ -67,7 +75,7 @@ const getAllSubniches = async (req: Request, res: Response) => {
     });
 
     const subniches = await prisma.subniche.findMany({
-      orderBy: orderBy,
+      orderBy: orderArray,
       where: {
         OR: [
           {
@@ -121,9 +129,59 @@ const getTotalSubniches = async (req: Request, res: Response) => {
   }
 };
 
+const getImportantSubniches = async (req: Request, res: Response) => {
+  try {
+    const importantSubniches = await prisma.subniche.findMany({
+      where: {
+        isImportant: true,
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      include: {
+        attachment: true,
+      },
+    });
+
+    res.status(httpStatus.OK).json(importantSubniches);
+  } catch (error) {
+    console.error("Erro ao buscar subnichos importantes:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao buscar subnichos importantes.",
+    });
+  }
+};
+
+const getImportantSubnichesByCategoryId = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+
+  try {
+    const subniches = await prisma.subniche.findMany({
+      where: {
+        categoryId,
+        isImportant: true,
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      include: {
+        category: true,
+        attachment: true,
+      },
+    });
+
+    res.status(httpStatus.OK).json(subniches);
+  } catch (error) {
+    console.error("Erro ao buscar subnichos importantes do subnicho:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao buscar subnichos importantes do subnicho.",
+    });
+  }
+};
+
 const getSubnichesByCategoryId = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
-  const { search } = req.query;
+  const { search, importantFirst } = req.query;
 
   try {
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -139,10 +197,16 @@ const getSubnichesByCategoryId = async (req: Request, res: Response) => {
       },
     });
 
+    let orderArray: any[] = [];
+
+    if (importantFirst === "true") {
+      orderArray = [{ isImportant: "desc" }, { displayOrder: "asc" }, { createdAt: "desc" }];
+    } else {
+      orderArray = [{ createdAt: "desc" }];
+    }
+
     const subniches = await prisma.subniche.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: orderArray,
       where: {
         categoryId,
         name: {
@@ -150,7 +214,6 @@ const getSubnichesByCategoryId = async (req: Request, res: Response) => {
           mode: "insensitive",
         },
       },
-
       include: {
         category: true,
         attachment: true,
@@ -227,6 +290,63 @@ const getSubnicheById = async (req: Request, res: Response) => {
   }
 };
 
+const markSubnicheAsImportant = async (req: Request, res: Response) => {
+  const { id } = req.body;
+
+  try {
+    const updatedSubniche = await prisma.subniche.update({
+      where: { id },
+      data: {
+        isImportant: true,
+        displayOrder: null,
+      },
+    });
+
+    res.status(httpStatus.OK).json(updatedSubniche);
+  } catch (error) {
+    console.error("Erro ao marcar subnicho como importante:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao marcar subnicho como importante.",
+    });
+  }
+};
+
+const removeSubnicheImportant = async (req: Request, res: Response) => {
+  const { id } = req.body;
+
+  try {
+    const updatedSubniche = await prisma.subniche.update({
+      where: { id },
+      data: { isImportant: false, displayOrder: null },
+    });
+
+    res.status(httpStatus.OK).json(updatedSubniche);
+  } catch (error) {
+    console.error("Erro ao remover status importante do subnicho:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao remover status importante do subnicho.",
+    });
+  }
+};
+
+const setSubnicheDisplayOrder = async (req: Request, res: Response) => {
+  const { id, displayOrder } = req.body;
+
+  try {
+    const updatedSubniche = await prisma.subniche.update({
+      where: { id },
+      data: { displayOrder },
+    });
+
+    res.status(httpStatus.OK).json(updatedSubniche);
+  } catch (error) {
+    console.error("Erro ao definir a ordem de exibição do subnicho:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao definir a ordem de exibição do subnicho.",
+    });
+  }
+};
+
 const updateSubniche = async (req: Request, res: Response) => {
   const { subnicheId } = req.params;
   const { name, categoryId, attachmentId } = req.body;
@@ -271,7 +391,12 @@ export default {
   getTotalSubniches,
   getSubnichesByCategoryId,
   getStickersBySubnicheId,
+  getImportantSubniches,
+  getImportantSubnichesByCategoryId,
   getSubnicheById,
+  markSubnicheAsImportant,
+  removeSubnicheImportant,
+  setSubnicheDisplayOrder,
   updateSubniche,
   deleteSubniche,
 };

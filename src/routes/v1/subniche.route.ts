@@ -11,6 +11,13 @@ router
   .get(auth(), validate(subnicheValidation.getAllSubniches), subnicheController.getAllSubniches);
 
 router.route("/total").get(auth(), subnicheController.getTotalSubniches);
+router.route("/important").get(auth(), subnicheController.getImportantSubniches);
+router
+  .route("/:categoryId/important")
+  .get(auth(), subnicheController.getImportantSubnichesByCategoryId);
+router.route("/markImportant").post(auth(), subnicheController.markSubnicheAsImportant);
+router.route("/removeImportant").post(auth(), subnicheController.removeSubnicheImportant);
+router.route("/setOrder").post(auth(), subnicheController.setSubnicheDisplayOrder);
 
 router
   .route("/create")
