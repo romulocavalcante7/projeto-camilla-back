@@ -102,12 +102,14 @@ model StickerTranslation {
 model Category {
   id           String                @id @default(uuid())
   name         String
+  isImportant  Boolean               @default(false)
+  displayOrder Int?
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
   stickers     Sticker[]
   subniches    Subniche[]
   translations CategoryTranslation[]
-  attachment   Attachment?           @relation(fields: [attachmentId], references: [id]) // Campo adicionado para relação com Attachment
+  attachment   Attachment?           @relation(fields: [attachmentId], references: [id])
   attachmentId String?               @unique
 }
 

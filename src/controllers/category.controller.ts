@@ -20,7 +20,7 @@ const createCategory = async (req: Request, res: Response) => {
 };
 
 const getAllCategories = async (req: Request, res: Response) => {
-  const { search } = req.query;
+  const { search, importantFirst } = req.query;
 
   const page = parseInt(req.query.page as string, 10) || 1;
   const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
@@ -37,6 +37,18 @@ const getAllCategories = async (req: Request, res: Response) => {
     orderBy[sortField] = sortOrder;
   }
 
+  let orderArray: any[] = [];
+
+  if (importantFirst === "true") {
+    orderArray = [
+      { isImportant: "desc" }, // Categorias importantes primeiro
+      { displayOrder: "asc" }, // Ordem de exibição para categorias importantes
+      orderBy, // Outras ordenações
+    ];
+  } else {
+    orderArray = [orderBy]; // Apenas outras ordenações
+  }
+
   try {
     const totalCount = await prisma.category.count({
       where: {
@@ -48,7 +60,7 @@ const getAllCategories = async (req: Request, res: Response) => {
     });
 
     const categories = await prisma.category.findMany({
-      orderBy: orderBy,
+      orderBy: orderArray,
       where: {
         name: {
           contains: (search as string) || "",
@@ -90,6 +102,30 @@ const getTotalCategories = async (req: Request, res: Response) => {
   }
 };
 
+const getImportantCategories = async (req: Request, res: Response) => {
+  try {
+    const importantCategories = await prisma.category.findMany({
+      where: {
+        isImportant: true,
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      include: {
+        attachment: true,
+        subniches: true,
+      },
+    });
+
+    res.status(httpStatus.OK).json(importantCategories);
+  } catch (error) {
+    console.error("Erro ao buscar categorias importantes:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao buscar categorias importantes.",
+    });
+  }
+};
+
 const getCategoryById = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
 
@@ -110,6 +146,63 @@ const getCategoryById = async (req: Request, res: Response) => {
     res.status(httpStatus.OK).json(category);
   } catch (error) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar categoria." });
+  }
+};
+
+const markCategoryAsImportant = async (req: Request, res: Response) => {
+  const { id } = req.body;
+
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: {
+        isImportant: true,
+        displayOrder: null,
+      },
+    });
+
+    res.status(httpStatus.OK).json(updatedCategory);
+  } catch (error) {
+    console.error("Erro ao marcar categoria como importante:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao marcar categoria como importante.",
+    });
+  }
+};
+
+const removeCategoryImportant = async (req: Request, res: Response) => {
+  const { id } = req.body;
+
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: { isImportant: false, displayOrder: null },
+    });
+
+    res.status(httpStatus.OK).json(updatedCategory);
+  } catch (error) {
+    console.error("Erro ao remover status importante da categoria:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao remover status importante da categoria.",
+    });
+  }
+};
+
+const setCategoryDisplayOrder = async (req: Request, res: Response) => {
+  const { id, displayOrder } = req.body;
+
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: { displayOrder },
+    });
+
+    res.status(httpStatus.OK).json(updatedCategory);
+  } catch (error) {
+    console.error("Erro ao definir a ordem de exibição da categoria:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      error: "Erro interno ao definir a ordem de exibição da categoria.",
+    });
   }
 };
 
@@ -154,7 +247,11 @@ export default {
   createCategory,
   getAllCategories,
   getTotalCategories,
+  getImportantCategories,
   getCategoryById,
+  markCategoryAsImportant,
+  removeCategoryImportant,
+  setCategoryDisplayOrder,
   updateCategory,
   deleteCategory,
 };
