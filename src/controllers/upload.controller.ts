@@ -23,6 +23,7 @@ const addFile = catchAsync(async (req: Request, res: Response) => {
 
 const addMultiplesFiles = catchAsync(async (req: Request, res: Response) => {
   const files = req.files as Express.Multer.File[];
+  const { userId } = req.body || {};
   if (!files || files.length === 0) {
     return res.status(httpStatus.BAD_REQUEST).json({
       message: "No files sent",
@@ -38,6 +39,7 @@ const addMultiplesFiles = catchAsync(async (req: Request, res: Response) => {
           filetype: fileInfo.filetype,
           filesize: fileInfo.filesize,
           url: fileInfo.url,
+          userId: userId ? userId : null,
         },
       });
       return savedFile;
