@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import httpStatus from "http-status";
 import catchAsync from "../utils/catchAsync";
 import { authService, userService, tokenService, emailService } from "../services";
 import exclude from "../utils/exclude";
 import { User } from "@prisma/client";
+import prisma from "../client";
 
 const register = catchAsync(async (req, res) => {
   const { email, password, name } = req.body;
@@ -30,13 +33,24 @@ const refreshTokens = catchAsync(async (req, res) => {
 });
 
 const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body || {};
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+  if (!user) {
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Email não encontrado!" });
+  }
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
+  await emailService.sendResetPasswordEmail(
+    req.body.email,
+    resetPasswordToken,
+    user.name?.toString()!
+  );
   res.status(httpStatus.NO_CONTENT).send();
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  await authService.resetPassword(req.query.token as string, req.body.password);
+  await authService.resetPassword(req.body.token as string, req.body.password);
   res.status(httpStatus.NO_CONTENT).send();
 });
 

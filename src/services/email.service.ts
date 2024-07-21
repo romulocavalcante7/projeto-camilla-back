@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import ejs from "ejs";
+import path from "path";
 import config from "../config/config";
 import logger from "../config/logger";
 
@@ -15,15 +17,29 @@ if (config.env !== "test") {
     );
 }
 
-/**
- * Send an email
- * @param {string} to
- * @param {string} subject
- * @param {string} text
- * @returns {Promise}
- */
-const sendEmail = async (to: string, subject: string, text: string) => {
-  const msg = { from: config.email.from, to, subject, text };
+interface EmailOptions {
+  to: string;
+  subject: string;
+  template: string;
+  data: { [key: string]: any };
+}
+
+const sendEmail = async (options: EmailOptions) => {
+  const { to, subject, template, data } = options;
+
+  // Obtenha o caminho para o arquivo de template do email
+  const templatePath = path.join(__dirname, "../mails", `${template}.ejs`);
+
+  // Renderize o template do email com o EJS
+  const html: string = await ejs.renderFile(templatePath, data);
+
+  const msg = {
+    from: config.email.from,
+    to,
+    subject,
+    html,
+  };
+
   await transport.sendMail(msg);
 };
 
@@ -31,16 +47,15 @@ const sendEmail = async (to: string, subject: string, text: string) => {
  * Send reset password email
  * @param {string} to
  * @param {string} token
+ * @param {string} name
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to: string, token: string) => {
-  const subject = "Reset password";
-  // replace this url with the link to the reset password page of your front-end app
-  const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
-  const text = `Dear user,
-To reset your password, click on this link: ${resetPasswordUrl}
-If you did not request any password resets, then ignore this email.`;
-  await sendEmail(to, subject, text);
+const sendResetPasswordEmail = async (to: string, token: string, name: string) => {
+  const subject = "Redefinir Senha";
+  const resetPasswordUrl = `${config.appUrl}/login/resetar-senha?token=${token}`;
+  const template = "resetPassword";
+  const data = { resetPasswordUrl, user: { name } };
+  await sendEmail({ to, subject, template, data });
 };
 
 /**
@@ -51,11 +66,10 @@ If you did not request any password resets, then ignore this email.`;
  */
 const sendVerificationEmail = async (to: string, token: string) => {
   const subject = "Email Verification";
-  // replace this url with the link to the email verification page of your front-end app
-  const verificationEmailUrl = `http://link-to-app/verify-email?token=${token}`;
-  const text = `Dear user,
-To verify your email, click on this link: ${verificationEmailUrl}`;
-  await sendEmail(to, subject, text);
+  const verificationEmailUrl = `${config.appUrl}/verify-email?token=${token}`;
+  const template = "verifyEmail";
+  const data = { verificationEmailUrl };
+  await sendEmail({ to, subject, template, data });
 };
 
 export default {
