@@ -54,12 +54,15 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
       user = await createUser(email, randomPassword, fullName);
 
       // Enviar senha ao usuário (implementação futura)
-      console.log("randomPassword", randomPassword);
-      emailService.sendEmail(
-        "wallace_2014_@hotmail.com",
-        "Acesso da plataforma",
-        `sua senha é ${randomPassword}`
-      );
+      await emailService.sendEmail({
+        to: "wallace_2014_@hotmail.com", //mudar depois
+        subject: "Acesso da plataforma",
+        template: "access",
+        data: {
+          user: { name: fullName, email: email },
+          password: randomPassword,
+        },
+      });
     }
 
     // Verifica se o cliente já existe ou cria um novo
