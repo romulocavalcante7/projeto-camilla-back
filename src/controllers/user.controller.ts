@@ -122,7 +122,18 @@ const getUsers = catchAsync(async (req, res) => {
 });
 
 const getUser = catchAsync(async (req, res) => {
-  const user = await userService.getUserById(req.params.userId);
+  const user = await userService.getUserById(req.body.userId, [
+    "id",
+    "email",
+    "name",
+    "password",
+    "role",
+    "isEmailVerified",
+    "createdAt",
+    "firstAccess",
+    "updatedAt",
+    "avatar",
+  ]);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }

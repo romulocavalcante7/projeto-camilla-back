@@ -28,6 +28,7 @@ const loginUserWithEmailAndPassword = async (
     "createdAt",
     "firstAccess",
     "updatedAt",
+    "avatar",
   ]);
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Email ou senha incorreta!");

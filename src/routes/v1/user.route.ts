@@ -3,6 +3,7 @@ import express from "express";
 // import validate from "../../middlewares/validate";
 // import { userValidation } from "../../validations";
 import { userController } from "../../controllers";
+import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
@@ -12,9 +13,7 @@ router.route("/webhook").post(userController.handleOrderApproved);
 //   .post(auth("admin"), validate(userValidation.createUser), userController.createUser)
 //   .get(auth("getUsers"), validate(userValidation.getUsers), userController.getUsers);
 
-// router
-//   .route("/:userId")
-//   .get(auth("getUsers"), validate(userValidation.getUser), userController.getUser)
+router.route("/user").post(auth(), userController.getUser);
 //   .patch(auth("admin"), validate(userValidation.updateUser), userController.updateUser)
 //   .delete(auth("admin"), validate(userValidation.deleteUser), userController.deleteUser);
 
