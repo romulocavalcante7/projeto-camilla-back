@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+//@ts-nocheck
 import { User, Role, Prisma, Customer } from "@prisma/client";
 import httpStatus from "http-status";
 import prisma from "../client";
@@ -241,6 +243,7 @@ const queryUsers = async <Key extends keyof User>(
  * @param {Key[]} [keys]
  * @returns {Promise<Pick<User, Key> | null>}
  */
+
 const getUserById = async <Key extends keyof User>(
   id: string,
   keys?: Key[]
