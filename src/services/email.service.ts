@@ -52,7 +52,7 @@ const sendEmail = async (options: EmailOptions) => {
  */
 const sendResetPasswordEmail = async (to: string, token: string, name: string) => {
   const subject = "Redefinir Senha";
-  const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
+  const resetPasswordUrl = `${config.appUrl}/login/resetar-senha?token=${token}`;
   const template = "resetPassword";
   const data = { resetPasswordUrl, user: { name } };
   await sendEmail({ to, subject, template, data });
@@ -66,7 +66,7 @@ const sendResetPasswordEmail = async (to: string, token: string, name: string) =
  */
 const sendVerificationEmail = async (to: string, token: string) => {
   const subject = "Email Verification";
-  const verificationEmailUrl = `http://link-to-app/verify-email?token=${token}`;
+  const verificationEmailUrl = `${config.appUrl}/verify-email?token=${token}`;
   const template = "verifyEmail";
   const data = { verificationEmailUrl };
   await sendEmail({ to, subject, template, data });

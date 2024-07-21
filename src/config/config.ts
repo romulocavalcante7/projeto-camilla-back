@@ -31,6 +31,7 @@ const envVarsSchema = Joi.object()
     REGION: Joi.string().required().description("AWS region"),
     ENDPOINT: Joi.string().required().description("Endpoint URL for AWS/S3"),
     BUCKET_NAME: Joi.string().required().description("AWS S3 bucket name"),
+    APP_URL: Joi.string().uri().required().description("App URL"),
   })
   .unknown();
 
@@ -70,4 +71,5 @@ export default {
     endpoint: envVars.ENDPOINT,
     bucketName: envVars.BUCKET_NAME,
   },
+  appUrl: envVars.APP_URL,
 };
