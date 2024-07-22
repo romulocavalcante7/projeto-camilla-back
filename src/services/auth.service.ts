@@ -88,8 +88,10 @@ const resetPassword = async (resetPasswordToken: string, newPassword: string): P
       throw new ApiError(httpStatus.NOT_FOUND, "Usuário não encontrado");
     }
     const encryptedPassword = await encryptPassword(newPassword);
-    await userService.updateUserById(user.id, { password: encryptedPassword });
-    await prisma.token.deleteMany({ where: { userId: user.id, type: TokenType.RESET_PASSWORD } });
+    await userService.updateUserById(user.id as string, { password: encryptedPassword });
+    await prisma.token.deleteMany({
+      where: { userId: user.id as string, type: TokenType.RESET_PASSWORD },
+    });
   } catch (error: any) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Expirou o tempo, gere novamente");
   }
