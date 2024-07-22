@@ -260,7 +260,7 @@ const getUserById = async <Key extends keyof User>(
  * @param {Key[]} [keys]
  * @returns {Promise<Pick<User, Key> | null>}
  */
-const getUserByEmail = async <Key extends keyof User>(
+const getUserByEmail = async <Key extends keyof any>(
   email: string,
   keys?: Key[]
 ): Promise<Pick<User, Key> | null> => {
@@ -277,7 +277,7 @@ const getUserByEmail = async <Key extends keyof User>(
  * @param {Key[]} [keys]
  * @returns {Promise<Pick<User, Key> | null>}
  */
-const updateUserById = async <Key extends keyof User>(
+const updateUserById = async <Key extends keyof any>(
   userId: string,
   updateBody: Prisma.UserUpdateInput,
   keys?: Key[]
