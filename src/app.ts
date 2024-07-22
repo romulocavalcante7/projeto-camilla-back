@@ -35,9 +35,16 @@ app.use(xss());
 // gzip compression
 app.use(compression());
 
-// enable cors
-app.use(cors());
-app.options("*", cors());
+const corsOptions = {
+  origin: "https://storyplus.vercel.app",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // jwt authentication
 app.use(passport.initialize());
