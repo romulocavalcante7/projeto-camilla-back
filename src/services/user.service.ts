@@ -244,7 +244,7 @@ const queryUsers = async <Key extends keyof User>(
  * @returns {Promise<Pick<User, Key> | null>}
  */
 
-const getUserById = async <Key extends keyof User>(
+const getUserById = async <Key extends keyof any>(
   id: string,
   keys?: Key[]
 ): Promise<Pick<User, Key> | null> => {
