@@ -4,7 +4,7 @@ import {
   HeadObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
-
+import { v4 as uuidv4 } from "uuid";
 import { s3 } from "../aws";
 import config from "../config/config";
 import prisma from "../client";
@@ -22,7 +22,8 @@ interface UploadResult {
  * @returns {Promise<UploadResult>}
  */
 const uploadFile = async (file: Express.Multer.File): Promise<UploadResult> => {
-  const fileName: string = file.originalname;
+  const uniqueSuffix = uuidv4();
+  const fileName = `${uniqueSuffix}-${file.originalname}`;
 
   const uploadCommand = new PutObjectCommand({
     Bucket: config.aws.bucketName,
@@ -46,7 +47,8 @@ const uploadFile = async (file: Express.Multer.File): Promise<UploadResult> => {
  */
 const uploadFiles = async (files: Express.Multer.File[]): Promise<UploadResult[]> => {
   const uploadPromises = files.map(async (file) => {
-    const fileName: string = file.originalname;
+    const uniqueSuffix = uuidv4();
+    const fileName = `${uniqueSuffix}-${file.originalname}`;
 
     const uploadCommand = new PutObjectCommand({
       Bucket: config.aws.bucketName,
