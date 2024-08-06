@@ -71,7 +71,6 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
     let customer = await prisma.customer.findUnique({
       where: { email: event.Customer.email || "" },
     });
-    console.log("customer", customer);
     if (!customer) {
       customer = await prisma.customer.create({
         data: {
@@ -95,18 +94,30 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
         },
       });
     }
-    let subscription;
-    // Verifica se a assinatura já existe ou cria uma nova
-    if (event?.subscription_id) {
-      subscription = await prisma.subscription.findUnique({
-        where: { id: event.subscription_id },
-      });
-    }
 
-    if (!subscription && event.subscription_id) {
-      subscription = await prisma.subscription.create({
-        data: {
-          id: event.subscription_id,
+    // Verifica se a assinatura já existe ou cria uma nova
+    let subscription;
+    if (event?.subscription_id) {
+      subscription = await prisma.subscription.upsert({
+        where: { id: event.subscription_id },
+        update: {
+          startDate: new Date(event.Subscription.start_date),
+          nextPayment: new Date(event.Subscription.next_payment),
+          status: event.Subscription.status,
+          plan: {
+            connectOrCreate: {
+              where: { id: event.Subscription.plan.id },
+              create: {
+                id: event.Subscription.plan.id,
+                name: event.Subscription.plan.name,
+                frequency: event.Subscription.plan.frequency,
+                qtyCharges: event.Subscription.plan.qty_charges,
+              },
+            },
+          },
+        },
+        create: {
+          id: event.Subscription.id,
           startDate: new Date(event.Subscription.start_date),
           nextPayment: new Date(event.Subscription.next_payment),
           status: event.Subscription.status,
@@ -191,10 +202,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
       orderData.commission = commissionData;
     }
 
-    await prisma.order.create({
-      data: orderData,
-    });
-
+    await prisma.order.create({ data: orderData });
     console.log("Order processed successfully");
   } catch (error) {
     console.error("Error creating user or order:", error);
