@@ -5,3 +5,4 @@ export { default as categoryController } from "./category.controller";
 export { default as stickerController } from "./sticker.controller";
 export { default as subnicheController } from "./subniche.controller";
 export { default as favoriteStickerController } from "./favoriteSticker.controller";
+export { default as paymentController } from "./paymentController";

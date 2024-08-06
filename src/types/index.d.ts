@@ -59,7 +59,7 @@ export interface OrderApprovedEvent {
     utm_content: null;
     utm_term: null;
   };
-  Subscription: {
+  Subscription?: {
     id: string;
     start_date: string;
     next_payment: string;
@@ -72,6 +72,6 @@ export interface OrderApprovedEvent {
     };
     charges: { completed: Array<any>; future: Array<any> };
   };
-  subscription_id: string;
+  subscription_id?: string;
   access_url: null;
 }

@@ -26,6 +26,8 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description("username for email server"),
     SMTP_PASSWORD: Joi.string().description("password for email server"),
     EMAIL_FROM: Joi.string().description("the from field in the emails sent by the app"),
+    SECRET_TOKEN_SINGLE: Joi.string().description("Token kiwify single"),
+    SECRET_TOKEN_SUBSCRIPTION: Joi.string().description("Token kiwify subscription "),
     ACCESS_KEY: Joi.string().required().description("Access key for AWS"),
     SECRET_KEY: Joi.string().required().description("Secret key for AWS"),
     REGION: Joi.string().required().description("AWS region"),
@@ -71,5 +73,7 @@ export default {
     endpoint: envVars.ENDPOINT,
     bucketName: envVars.BUCKET_NAME,
   },
+  secretTokenSingle: envVars.SECRET_TOKEN_SINGLE,
+  secretTokenSubscription: envVars.SECRET_TOKEN_SUBSCRIPTION,
   appUrl: envVars.APP_URL,
 };

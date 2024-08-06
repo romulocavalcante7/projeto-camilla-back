@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import httpStatus from "http-status";
 import crypto from "crypto";
 import pick from "../utils/pick";
@@ -5,25 +6,25 @@ import ApiError from "../utils/ApiError";
 import catchAsync from "../utils/catchAsync";
 import { userService } from "../services";
 import { OrderApprovedEvent } from "../types";
-
-const secret = "qma8i8fdwmd";
+import config from "../config/config";
 
 const handleOrderApproved = catchAsync(async (req, res) => {
   const order = req.body;
   const { signature } = req.query;
+  //@ts-ignore
+  const tokenType = req.tokenType;
+  const secretToken =
+    tokenType === "singleToken" ? config.secretTokenSingle : config.secretTokenSubscription;
+
   const calculatedSignature = crypto
-    .createHmac("sha1", secret)
+    .createHmac("sha1", secretToken)
     .update(JSON.stringify(order))
     .digest("hex");
-  console.log("signature", signature);
-  console.log("calculatedSignature", calculatedSignature);
+
   if (signature !== calculatedSignature) {
     return res.status(400).send({ error: "Incorrect signature" });
   }
 
-  console.log("Received order:", order);
-
-  // Extract relevant data from the order event
   const event: OrderApprovedEvent = {
     order_ref: order.order_ref,
     order_status: order.order_status,
@@ -86,22 +87,22 @@ const handleOrderApproved = catchAsync(async (req, res) => {
       utm_term: order.TrackingParameters.utm_term,
     },
     Subscription: {
-      id: order.Subscription.id,
-      start_date: order.Subscription.start_date,
-      next_payment: order.Subscription.next_payment,
-      status: order.Subscription.status,
+      id: order?.Subscription?.id,
+      start_date: order?.Subscription?.start_date,
+      next_payment: order?.Subscription?.next_payment,
+      status: order?.Subscription?.status,
       plan: {
-        id: order.Subscription.plan.id,
-        name: order.Subscription.plan.name,
-        frequency: order.Subscription.plan.frequency,
-        qty_charges: order.Subscription.plan.qty_charges,
+        id: order?.Subscription?.plan?.id,
+        name: order?.Subscription?.plan?.name,
+        frequency: order?.Subscription?.plan?.frequency,
+        qty_charges: order?.Subscription?.plan?.qty_charges,
       },
       charges: {
-        completed: order.Subscription.charges.completed,
-        future: order.Subscription.charges.future,
+        completed: order?.Subscription?.charges?.completed,
+        future: order?.Subscription?.charges?.future,
       },
     },
-    subscription_id: order.subscription_id,
+    subscription_id: order?.subscription_id,
     access_url: order.access_url,
   };
 

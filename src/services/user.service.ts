@@ -57,7 +57,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
 
       // Enviar senha ao usuário (implementação futura)
       await emailService.sendEmail({
-        to: "wallace_2014_@hotmail.com", //mudar depois
+        to: email,
         subject: "Acesso da plataforma",
         template: "access",
         data: {
@@ -95,12 +95,15 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
         },
       });
     }
-
+    let subscription;
     // Verifica se a assinatura já existe ou cria uma nova
-    let subscription = await prisma.subscription.findUnique({
-      where: { id: event.subscription_id },
-    });
-    if (!subscription) {
+    if (event?.subscription_id) {
+      subscription = await prisma.subscription.findUnique({
+        where: { id: event.subscription_id },
+      });
+    }
+
+    if (!subscription && event.subscription_id) {
       subscription = await prisma.subscription.create({
         data: {
           id: event.subscription_id,
@@ -151,6 +154,10 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
       commissionData = { connect: { id: existingCommission.id } };
     }
 
+    const objectSubscription = event.subscription_id
+      ? { connect: { id: subscription.id } }
+      : undefined;
+
     // Cria a ordem associada ao usuário
     const orderData: any = {
       orderRef: event.order_ref,
@@ -176,7 +183,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
       webhookEventType: event.webhook_event_type,
       user: { connect: { id: user.id } },
       product: { connect: { id: product.id } },
-      subscription: { connect: { id: subscription.id } },
+      subscription: objectSubscription,
       customer: { connect: { email: customer.email } },
     };
 
@@ -247,11 +254,65 @@ const queryUsers = async <Key extends keyof User>(
 const getUserById = async <Key extends keyof any>(
   id: string,
   keys?: Key[]
-): Promise<Pick<User, Key> | null> => {
-  return prisma.user.findUnique({
+): Promise<
+  | (Pick<User, Key> & {
+      subscription?: { status: string; frequency: string; nextPayment: string };
+      orderStatus?: string;
+    })
+  | null
+> => {
+  const user = (await prisma.user.findUnique({
     where: { id },
-    select: keys ? keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}) : undefined,
-  }) as Promise<Pick<User, Key> | null>;
+    select: keys
+      ? keys.reduce((obj, k) => ({ ...obj, [k]: true }), {
+          orders: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              orderStatus: true,
+              subscription: {
+                select: {
+                  status: true,
+                  nextPayment: true,
+                  plan: {
+                    select: {
+                      frequency: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+      : undefined,
+  })) as Promise<
+    | (Pick<User, Key> & {
+        subscription?: { status: string; frequency: string; nextPayment: string };
+        orderStatus?: string;
+      })
+    | null
+  >;
+
+  if (!user) {
+    return null;
+  }
+
+  const orderWithSubscription = user?.orders?.find((order) => order?.subscription);
+  const subscription = orderWithSubscription?.subscription;
+  const orderStatus = user?.orders?.length > 0 ? user.orders[0].orderStatus : undefined;
+
+  return {
+    ...user,
+    subscription: subscription
+      ? {
+          status: subscription.status,
+          frequency: subscription.plan.frequency,
+          nextPayment: subscription.nextPayment.toISOString(),
+        }
+      : undefined,
+    orderStatus: orderStatus,
+  };
 };
 
 /**
@@ -263,11 +324,65 @@ const getUserById = async <Key extends keyof any>(
 const getUserByEmail = async <Key extends keyof any>(
   email: string,
   keys?: Key[]
-): Promise<Pick<User, Key> | null> => {
-  return prisma.user.findUnique({
+): Promise<
+  | (Pick<User, Key> & {
+      subscription?: { status: string; frequency: string; nextPayment: string };
+      orderStatus?: string;
+    })
+  | null
+> => {
+  const user = (await prisma.user.findUnique({
     where: { email },
-    select: keys ? keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}) : undefined,
-  }) as Promise<Pick<User, Key> | null>;
+    select: keys
+      ? keys.reduce((obj, k) => ({ ...obj, [k]: true }), {
+          orders: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              orderStatus: true,
+              subscription: {
+                select: {
+                  status: true,
+                  nextPayment: true,
+                  plan: {
+                    select: {
+                      frequency: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+      : undefined,
+  })) as Promise<
+    | (Pick<User, Key> & {
+        subscription?: { status: string; frequency: string; nextPayment: string };
+        orderStatus?: string;
+      })
+    | null
+  >;
+
+  if (!user) {
+    return null;
+  }
+
+  const orderWithSubscription = user?.orders?.find((order) => order?.subscription);
+  const subscription = orderWithSubscription?.subscription;
+  const orderStatus = user?.orders?.length > 0 ? user.orders[0].orderStatus : undefined;
+
+  return {
+    ...user,
+    subscription: subscription
+      ? {
+          status: subscription.status,
+          frequency: subscription.plan.frequency,
+          nextPayment: subscription.nextPayment.toISOString(),
+        }
+      : undefined,
+    orderStatus: orderStatus,
+  };
 };
 
 /**

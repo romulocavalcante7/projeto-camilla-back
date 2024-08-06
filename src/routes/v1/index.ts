@@ -7,6 +7,7 @@ import categoryRoutes from "./category.route";
 import subnichesRoutes from "./subniche.route";
 import stickerRoutes from "./sticker.route";
 import favoriteStickerRoutes from "./favoriteSticker.route";
+import paymentRoutes from "./payment.route";
 import docsRoute from "./docs.route";
 import config from "../../config/config";
 
@@ -44,6 +45,10 @@ const defaultRoutes = [
   {
     path: "/favoriteSticker",
     route: favoriteStickerRoutes,
+  },
+  {
+    path: "/payment",
+    route: paymentRoutes,
   },
 ];
 

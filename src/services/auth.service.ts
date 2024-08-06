@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import httpStatus from "http-status";
 import tokenService from "./token.service";
 import userService from "./user.service";
@@ -17,7 +18,12 @@ import exclude from "../utils/exclude";
 const loginUserWithEmailAndPassword = async (
   email: string,
   password: string
-): Promise<Omit<User, "password">> => {
+): Promise<
+  Omit<User, "password"> & {
+    subscription?: { status: string; frequency: string; nextPayment: string };
+    orderStatus?: string;
+  }
+> => {
   const user = await userService.getUserByEmail(email, [
     "id",
     "email",
@@ -30,10 +36,17 @@ const loginUserWithEmailAndPassword = async (
     "updatedAt",
     "avatar",
   ]);
+
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Email ou senha incorreta!");
   }
-  return exclude(user, ["password"]);
+  //@ts-ignore
+  delete user.orders;
+  return {
+    ...exclude(user, ["password"]),
+    subscription: user.subscription,
+    orderStatus: user.orderStatus,
+  };
 };
 
 /**
