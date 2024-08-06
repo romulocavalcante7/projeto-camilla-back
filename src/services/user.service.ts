@@ -7,6 +7,7 @@ import ApiError from "../utils/ApiError";
 import { encryptPassword, generateRandomPassword } from "../utils/encryption";
 import { OrderApprovedEvent } from "../types";
 import emailService from "./email.service";
+import config from "../config/config";
 
 /**
  * Create a user
@@ -63,6 +64,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
         data: {
           user: { name: fullName, email: email },
           password: randomPassword,
+          appUrl: config.appUrl,
         },
       });
     }
