@@ -8,6 +8,8 @@ import subnichesRoutes from "./subniche.route";
 import stickerRoutes from "./sticker.route";
 import favoriteStickerRoutes from "./favoriteSticker.route";
 import paymentRoutes from "./payment.route";
+import searchRoutes from "./search.route";
+import tutorialRoutes from "./tutorial.route";
 import docsRoute from "./docs.route";
 import config from "../../config/config";
 
@@ -49,6 +51,14 @@ const defaultRoutes = [
   {
     path: "/payment",
     route: paymentRoutes,
+  },
+  {
+    path: "/search",
+    route: searchRoutes,
+  },
+  {
+    path: "/tutorials",
+    route: tutorialRoutes,
   },
 ];
 

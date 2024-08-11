@@ -51,6 +51,7 @@ model Attachment {
   stickerTranslations StickerTranslation[]
   subnicheAttachment  Subniche?
   categoryAttachment  Category?
+  tutorial            Tutorial[]
 }
 
 model CategoryAttachment {
@@ -162,6 +163,18 @@ model FavoriteSticker {
   sticker   Sticker  @relation(fields: [stickerId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stickerId])
+}
+
+model Tutorial {
+  id           String      @id @default(uuid())
+  name         String
+  youtubeLink  String
+  attachmentId String?
+  isImportant  Boolean     @default(false)
+  displayOrder Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  attachment   Attachment? @relation(fields: [attachmentId], references: [id])
 }
 
 model Order {
