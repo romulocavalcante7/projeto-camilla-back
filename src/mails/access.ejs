@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Acesso à Plataforma</title>
+    <title>Acesso a Plataforma</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style type="text/css">
@@ -44,9 +44,17 @@
         margin: 0 auto;
       }
       .email-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         background-color: #b743d0;
         padding: 24px;
         color: #ffffff;
+      }
+      .logo {
+        width: 200px;
       }
       .email-body {
         padding: 24px;
@@ -73,19 +81,43 @@
   <body>
     <div class="email-wrapper">
       <div class="email-header">
-        <h1>Bem-vindo à Plataforma</h1>
+        <img class="logo" src="https://portalstoryplus.com/favicon.ico" alt="logo" />
+        <h1>Bem-vindo à plataforma</h1>
       </div>
       <div class="email-body">
         <p>Olá <%= user.name %>,</p>
-        <p>Bem-vindo à nossa plataforma! Aqui estão seus dados de acesso:</p>
+        <p>Bem-vindo à nossa plataforma! Abaixo estão os detalhes para acessar sua conta:</p>
         <p><strong>E-mail:</strong> <%= user.email %></p>
         <p><strong>Senha:</strong> <%= password %></p>
-        <p>Por favor, altere sua senha após o primeiro login.</p>
         <p>
-          <strong>Acesse:</strong>
-          <a href="<%= appUrl %>"><%= appUrl %></a>
+          Recomendamos que você altere sua senha após o primeiro login para garantir a segurança da
+          sua conta.
         </p>
+        <p>
+          <strong>Para acessar a plataforma, clique no link a seguir: </strong>
+          <a href="<%= appUrl %>" target="_blank"><%= appUrl %></a>
+        </p>
+        <p>
+          <strong style="font-size: 24">Tutoriais de instalação: </strong>
+          <br />
+          <br />
+          <a href="https://www.youtube.com/watch?v=PgyCvrIM9bo" target="_blank"
+            >Como instalar o Portal Story Plus no IPhone</a
+          >
+          <br />
+          <br />
+          <a href="https://www.youtube.com/watch?v=-s1HUxANq54" target="_blank"
+            >Como instalar o Portal Story Plus no Android</a
+          >
+        </p>
+        <br />
+        <strong>Obrigado por escolher o Portal Story Plus!</strong>
+        <br />
+        <br />
+        <p style="margin-bottom: 0px">Atenciosamente,</p>
+        <p>Equipe Portal Story Plus</p>
       </div>
+
       <div class="email-footer">
         <p>
           Se você tiver alguma dúvida, não hesite em nos contatar em
