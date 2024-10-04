@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
-import { inHTMLData } from 'xss-filters';
+import { NextFunction, Request, Response } from "express";
+import { inHTMLData } from "xss-filters";
 
 /**
  * Clean for xss.
  * @param {string/object} data - The value to sanitize
  * @return {string/object} The sanitized value
  */
-export const clean = <T>(data: T | string = ''): T => {
+export const clean = <T>(data: T | string = ""): T => {
   let isObject = false;
-  if (typeof data === 'object') {
+  if (typeof data === "object") {
     data = JSON.stringify(data);
     isObject = true;
   }

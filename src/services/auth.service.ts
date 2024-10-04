@@ -35,6 +35,7 @@ const loginUserWithEmailAndPassword = async (
     "firstAccess",
     "updatedAt",
     "avatar",
+    "status",
   ]);
 
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
@@ -46,6 +47,7 @@ const loginUserWithEmailAndPassword = async (
     ...exclude(user, ["password"]),
     subscription: user.subscription,
     orderStatus: user.orderStatus,
+    status: user.status,
   };
 };
 

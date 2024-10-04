@@ -1,14 +1,18 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+//@ts-nocheck
 import httpStatus from "http-status";
 import crypto from "crypto";
-import pick from "../utils/pick";
+import prisma from "../client";
 import ApiError from "../utils/ApiError";
 import catchAsync from "../utils/catchAsync";
 import { userService } from "../services";
 import { OrderApprovedEvent } from "../types";
 import config from "../config/config";
+import { Request, Response } from "express";
+import { getUserDetailById } from "../services/user.service";
 
-const handleOrderApproved = catchAsync(async (req, res) => {
+const handleOrderApproved = catchAsync(async (req: Request, res: Response) => {
   const order = req.body;
   const { signature } = req.query;
   //@ts-ignore
@@ -115,14 +119,117 @@ const handleOrderApproved = catchAsync(async (req, res) => {
   }
 });
 
-const getUsers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ["name", "role"]);
-  const options = pick(req.query, ["sortBy", "limit", "page"]);
-  const result = await userService.queryUsers(filter, options);
-  res.send(result);
+const getUsers = catchAsync(async (req: Request, res: Response) => {
+  const { search, role } = req.query;
+
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+  const sortField = (req.query.sortField as string) || "createdAt";
+  const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+
+  const orderBy: any = {};
+  orderBy[sortField] = sortOrder;
+
+  try {
+    const where: any = {
+      OR: [
+        {
+          name: {
+            contains: search?.toString() || "",
+            mode: "insensitive",
+          },
+        },
+        {
+          email: {
+            contains: search?.toString() || "",
+            mode: "insensitive",
+          },
+        },
+      ],
+    };
+
+    if (role) {
+      const roleEnum = role.toString().toUpperCase() as Role;
+      if (Object.values(Role).includes(roleEnum)) {
+        where.role = roleEnum;
+      } else {
+        return res.status(httpStatus.BAD_REQUEST).json({ error: "Role inválido." });
+      }
+    }
+    const totalCount = await prisma.user.count({
+      where,
+    });
+
+    const users = await prisma.user.findMany({
+      where,
+      include: {
+        avatar: true,
+        orders: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          include: {
+            subscription: {
+              include: {
+                plan: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isEmailVerified: user.isEmailVerified,
+      firstAccess: user.firstAccess,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      avatar: user.avatar
+        ? {
+            id: user.avatar.id,
+            filename: user.avatar.filename,
+            filetype: user.avatar.filetype,
+            filesize: user.avatar.filesize,
+            url: user.avatar.url,
+            createdAt: user.avatar.createdAt.toISOString(),
+            updatedAt: user.avatar.updatedAt.toISOString(),
+          }
+        : undefined,
+      subscription:
+        user.orders.length > 0 && user.orders[0].subscription
+          ? {
+              status: user.orders[0].subscription.status,
+              nextPayment: user.orders[0].subscription.nextPayment.toISOString(),
+              startDate: user.orders[0].subscription.startDate.toISOString(),
+              planName: user.orders[0].subscription.plan.name,
+            }
+          : undefined,
+      orderStatus: user.orders.length > 0 ? user.orders[0].orderStatus : undefined,
+      status: user.status,
+    }));
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalCount,
+      totalPages,
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuários:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar usuários." });
+  }
 });
 
-const getUser = catchAsync(async (req, res) => {
+const getUser = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.getUserById(req.body.userId, [
     "id",
     "email",
@@ -134,6 +241,7 @@ const getUser = catchAsync(async (req, res) => {
     "firstAccess",
     "updatedAt",
     "avatar",
+    "status",
   ]);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
@@ -141,12 +249,50 @@ const getUser = catchAsync(async (req, res) => {
   res.send(user);
 });
 
-const updateUser = catchAsync(async (req, res) => {
+const getUserDetail = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.body || {};
+  if (!userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "O campo userId é obrigatório");
+  }
+  const user = await getUserDetailById(userId, {
+    avatar: true,
+    tokens: true,
+    orders: {
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        product: true,
+        customer: true,
+        commission: true,
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
+      },
+    },
+    favorites: true,
+    stickers: true,
+  });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+  res.send(user);
+});
+
+const updateUser = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.updateUserById(req.params.userId, req.body);
   res.send(user);
 });
 
-const deleteUser = catchAsync(async (req, res) => {
+const inactiveUser = catchAsync(async (req: Request, res: Response) => {
+  const { status } = req.body || {};
+  await userService.inactiveUser(req.params.userId, status);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
   await userService.deleteUserById(req.params.userId);
   res.status(httpStatus.NO_CONTENT).send();
 });
@@ -155,6 +301,8 @@ export default {
   handleOrderApproved,
   getUsers,
   getUser,
+  getUserDetail,
   updateUser,
+  inactiveUser,
   deleteUser,
 };

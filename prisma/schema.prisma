@@ -22,6 +22,7 @@ model User {
   orders          Order[]
   favorites       FavoriteSticker[]
   stickers        Sticker[]
+  status          Boolean           @default(true)
 }
 
 model Token {

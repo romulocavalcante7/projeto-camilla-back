@@ -1,21 +1,21 @@
 import express from "express";
-// import auth from "../../middlewares/auth";
-// import validate from "../../middlewares/validate";
-// import { userValidation } from "../../validations";
 import { userController } from "../../controllers";
 import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
 router.route("/webhook").post(userController.handleOrderApproved);
-// router
-//   .route("/")
-//   .post(auth("admin"), validate(userValidation.createUser), userController.createUser)
-//   .get(auth("getUsers"), validate(userValidation.getUsers), userController.getUsers);
+
+router.route("/").get(auth("admin"), userController.getUsers);
 
 router.route("/user").post(auth(), userController.getUser);
-//   .patch(auth("admin"), validate(userValidation.updateUser), userController.updateUser)
-//   .delete(auth("admin"), validate(userValidation.deleteUser), userController.deleteUser);
+router.route("/userDetail").post(auth(), userController.getUserDetail);
+
+router
+  .route("/:userId")
+  .post(auth("admin"), userController.inactiveUser)
+  .patch(auth("admin"), userController.updateUser)
+  .delete(auth("admin"), userController.deleteUser);
 
 export default router;
 

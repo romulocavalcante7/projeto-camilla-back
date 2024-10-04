@@ -9,6 +9,19 @@ import { OrderApprovedEvent } from "../types";
 import emailService from "./email.service";
 import config from "../config/config";
 
+interface UserIncludes {
+  avatar?: boolean;
+  tokens?: boolean;
+  orders?: boolean;
+  favorites?: boolean;
+  stickers?: boolean;
+  subscription?: {
+    include: {
+      plan: boolean;
+    };
+  };
+}
+
 /**
  * Create a user
  * @param {string} email
@@ -58,11 +71,11 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
 
       // Enviar senha ao usuário (implementação futura)
       await emailService.sendEmail({
-        to: email,
+        to: "wallace_2014_@hotmail.com",
         subject: "Acesso da plataforma",
         template: "access",
         data: {
-          user: { name: fullName, email: email },
+          user: { name: fullName, email: "wallace_2014_@hotmail.com" },
           password: randomPassword,
           appUrl: config.appUrl,
         },
@@ -325,6 +338,16 @@ const getUserById = async <Key extends keyof any>(
   };
 };
 
+export const getUserDetailById = async (
+  userId: string,
+  includes?: UserIncludes
+): Promise<User | null> => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    include: includes,
+  });
+};
+
 /**
  * Get user by email
  * @param {string} email
@@ -422,18 +445,71 @@ const updateUserById = async <Key extends keyof any>(
   return updatedUser as Pick<User, Key> | null;
 };
 
+export const inactiveUser = async (userId: string, status: boolean): Promise<void> => {
+  try {
+    console.log({ userId, status });
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        status,
+      },
+    });
+  } catch (error) {
+    console.error("Error inactive user:", error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to inactive user");
+  }
+};
+
 /**
  * Delete user by id
  * @param {string} userId
- * @returns {Promise<User>}
+ * @returns {Promise<void>}
  */
-const deleteUserById = async (userId: string): Promise<User> => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+export const deleteUserById = async (userId: string): Promise<void> => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Deletar favoritos relacionados
+      await tx.favoriteSticker.deleteMany({
+        where: { userId },
+      });
+
+      // Deletar tokens relacionados
+      await tx.token.deleteMany({
+        where: { userId },
+      });
+
+      // Deletar stickers relacionados
+      await tx.sticker.deleteMany({
+        where: { userId },
+      });
+
+      // Deletar orders relacionados
+      await tx.order.deleteMany({
+        where: { userId },
+      });
+
+      // Deletar attachment relacionado (avatar)
+      await tx.attachment.deleteMany({
+        where: { userId },
+      });
+
+      // Finalmente, deletar o usuário
+      const deletedUser = await tx.user.delete({
+        where: { id: userId },
+      });
+
+      if (!deletedUser) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting user and related records:", error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to delete user");
   }
-  await prisma.user.delete({ where: { id: user.id } });
-  return user;
 };
 
 export default {
@@ -443,5 +519,6 @@ export default {
   getUserById,
   getUserByEmail,
   updateUserById,
+  inactiveUser,
   deleteUserById,
 };
