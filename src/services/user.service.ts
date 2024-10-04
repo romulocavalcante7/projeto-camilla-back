@@ -28,16 +28,20 @@ interface UserIncludes {
  * @param {string} password
  * @param {string} [name]
  * @param {Role} [role]
+ * @param {boolean} [isManuallyCreated] - Indica se o usuário foi criado manualmente
+ * @param {Date} [expirationDate] - Data de expiração do usuário
  * @returns {Promise<User>}
  */
 const createUser = async (
   email: string,
   password: string,
   name?: string,
-  role: Role = Role.USER
+  role: Role = Role.USER,
+  isManuallyCreated = false,
+  expirationDate?: Date
 ): Promise<User> => {
   if (await getUserByEmail(email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email já existe");
   }
   return prisma.user.create({
     data: {
@@ -45,6 +49,8 @@ const createUser = async (
       name,
       password: await encryptPassword(password),
       role,
+      isManuallyCreated,
+      expirationDate,
     },
   });
 };

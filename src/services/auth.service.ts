@@ -36,6 +36,8 @@ const loginUserWithEmailAndPassword = async (
     "updatedAt",
     "avatar",
     "status",
+    "isManuallyCreated",
+    "expirationDate",
   ]);
 
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
@@ -48,6 +50,8 @@ const loginUserWithEmailAndPassword = async (
     subscription: user.subscription,
     orderStatus: user.orderStatus,
     status: user.status,
+    isManuallyCreated: user.isManuallyCreated,
+    expirationDate: user.expirationDate,
   };
 };
 

@@ -119,6 +119,21 @@ const handleOrderApproved = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const createUser = catchAsync(async (req: Request, res: Response) => {
+  const { email, password, name, role, isManuallyCreated, expirationDate } = req.body || {};
+
+  const user = await userService.createUser(
+    email,
+    password,
+    name,
+    role,
+    isManuallyCreated,
+    expirationDate ? new Date(expirationDate) : undefined
+  );
+
+  res.status(httpStatus.CREATED).send(user);
+});
+
 const getUsers = catchAsync(async (req: Request, res: Response) => {
   const { search, role } = req.query;
 
@@ -212,6 +227,8 @@ const getUsers = catchAsync(async (req: Request, res: Response) => {
           : undefined,
       orderStatus: user.orders.length > 0 ? user.orders[0].orderStatus : undefined,
       status: user.status,
+      isManuallyCreated: user.isManuallyCreated,
+      expirationDate: user.expirationDate,
     }));
 
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -299,6 +316,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
 
 export default {
   handleOrderApproved,
+  createUser,
   getUsers,
   getUser,
   getUserDetail,

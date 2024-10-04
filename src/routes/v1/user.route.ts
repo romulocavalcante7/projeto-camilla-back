@@ -7,6 +7,7 @@ const router = express.Router();
 router.route("/webhook").post(userController.handleOrderApproved);
 
 router.route("/").get(auth("admin"), userController.getUsers);
+router.route("/create").post(auth("admin"), userController.createUser);
 
 router.route("/user").post(auth(), userController.getUser);
 router.route("/userDetail").post(auth(), userController.getUserDetail);
