@@ -77,11 +77,11 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
 
       // Enviar senha ao usuário (implementação futura)
       await emailService.sendEmail({
-        to: "wallace_2014_@hotmail.com",
+        to: email,
         subject: "Acesso da plataforma",
         template: "access",
         data: {
-          user: { name: fullName, email: "wallace_2014_@hotmail.com" },
+          user: { name: fullName, email: email },
           password: randomPassword,
           appUrl: config.appUrl,
         },
