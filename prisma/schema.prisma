@@ -54,6 +54,8 @@ model Attachment {
   stickerTranslations StickerTranslation[]
   subnicheAttachment  Subniche?
   categoryAttachment  Category?
+  font                Font?
+  icon                Icon?
   tutorial            Tutorial[]
 }
 
@@ -72,17 +74,18 @@ model SubnicheAttachment {
 }
 
 model Sticker {
-  id           String   @id @default(uuid())
-  name         String?
-  attachmentId String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  categoryId   String
-  subnicheId   String?
-  userId       String?
+  id            String   @id @default(uuid())
+  name          String?
+  attachmentId  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  categoryId    String?
+  subnicheId    String?
+  userId        String?
+  isUserCreated Boolean  @default(false)
 
   attachment      Attachment           @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
-  category        Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category        Category?            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subniche        Subniche?            @relation(fields: [subnicheId], references: [id], onDelete: Cascade)
   user            User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   FavoriteSticker FavoriteSticker[]
@@ -101,6 +104,28 @@ model StickerTranslation {
   attachment   Attachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull) // Relação opcional com Attachment
 
   @@unique([stickerId, language])
+}
+
+model Font {
+  id           String      @id @default(uuid())
+  name         String
+  isImportant  Boolean     @default(false)
+  displayOrder Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  attachment   Attachment? @relation(fields: [attachmentId], references: [id])
+  attachmentId String?     @unique
+}
+
+model Icon {
+  id           String      @id @default(uuid())
+  name         String
+  isImportant  Boolean     @default(false)
+  displayOrder Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  attachment   Attachment? @relation(fields: [attachmentId], references: [id])
+  attachmentId String?     @unique
 }
 
 model Category {

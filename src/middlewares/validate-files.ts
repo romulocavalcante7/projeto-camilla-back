@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import httpStatus from "http-status";
+import path from "path";
 
 export class FileValidatorMiddleware {
   public validateFile(req: Request, res: Response, next: NextFunction) {
@@ -9,6 +10,7 @@ export class FileValidatorMiddleware {
       return res.status(httpStatus.BAD_REQUEST).json({ error: "No file provided" });
     }
 
+    // Tipos MIME permitidos
     const allowedMimes = [
       "image/jpeg",
       "image/png",
@@ -17,9 +19,23 @@ export class FileValidatorMiddleware {
       "application/pdf",
       "video/mp4",
       "video/webm",
+      "font/ttf",
+      "font/otf",
+      "font/woff",
+      "font/woff2",
+      "application/x-font-ttf",
+      "application/x-font-opentype",
+      "application/x-font-woff",
+      "application/font-woff2",
     ];
 
-    if (!allowedMimes.includes(file.mimetype)) {
+    // Extensões de arquivos permitidas
+    const allowedExtensions = [".ttf", ".otf", ".woff", ".woff2"];
+
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+
+    // Valida se o tipo MIME ou a extensão é permitido
+    if (!allowedMimes.includes(file.mimetype) && !allowedExtensions.includes(fileExtension)) {
       return res.status(httpStatus.BAD_REQUEST).json({ error: "File type not allowed" });
     }
 
@@ -33,6 +49,7 @@ export class FileValidatorMiddleware {
       return res.status(httpStatus.BAD_REQUEST).json({ error: "No files provided" });
     }
 
+    // Tipos MIME permitidos
     const allowedMimes = [
       "image/jpeg",
       "image/png",
@@ -41,10 +58,24 @@ export class FileValidatorMiddleware {
       "application/pdf",
       "video/mp4",
       "video/webm",
+      "font/ttf",
+      "font/otf",
+      "font/woff",
+      "font/woff2",
+      "application/x-font-ttf",
+      "application/x-font-opentype",
+      "application/x-font-woff",
+      "application/font-woff2",
     ];
 
+    // Extensões de arquivos permitidas
+    const allowedExtensions = [".ttf", ".otf", ".woff", ".woff2"];
+
     for (const file of files) {
-      if (!allowedMimes.includes(file.mimetype)) {
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+
+      // Valida se o tipo MIME ou a extensão é permitido
+      if (!allowedMimes.includes(file.mimetype) && !allowedExtensions.includes(fileExtension)) {
         return res
           .status(httpStatus.BAD_REQUEST)
           .json({ error: `File type not allowed: ${file.originalname}` });

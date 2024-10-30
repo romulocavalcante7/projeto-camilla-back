@@ -6,6 +6,9 @@ import uploadRoutes from "./upload.route";
 import categoryRoutes from "./category.route";
 import subnichesRoutes from "./subniche.route";
 import stickerRoutes from "./sticker.route";
+import userStickerRoutes from "./userSticker.route";
+import fontRoutes from "./font.route";
+import iconRoutes from "./icon.route";
 import favoriteStickerRoutes from "./favoriteSticker.route";
 import paymentRoutes from "./payment.route";
 import searchRoutes from "./search.route";
@@ -33,6 +36,14 @@ const defaultRoutes = [
     route: uploadRoutes,
   },
   {
+    path: "/fonts",
+    route: fontRoutes,
+  },
+  {
+    path: "/icons",
+    route: iconRoutes,
+  },
+  {
     path: "/categories",
     route: categoryRoutes,
   },
@@ -43,6 +54,10 @@ const defaultRoutes = [
   {
     path: "/stickers",
     route: stickerRoutes,
+  },
+  {
+    path: "/userStickers",
+    route: userStickerRoutes,
   },
   {
     path: "/favoriteSticker",
