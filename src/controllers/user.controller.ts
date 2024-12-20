@@ -295,7 +295,9 @@ const getUserDetail = catchAsync(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
-  res.send(user);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = user || {};
+  res.send(userWithoutPassword);
 });
 
 const updateUser = catchAsync(async (req: Request, res: Response) => {
