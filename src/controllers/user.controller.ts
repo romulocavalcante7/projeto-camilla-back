@@ -35,7 +35,7 @@ const handleOrderApproved = catchAsync(async (req: Request, res: Response) => {
     product_type: order.product_type,
     payment_method: order.payment_method,
     store_id: order.store_id,
-    payment_merchant_id: order.payment_merchant_id,
+    payment_merchant_id: order?.payment_merchant_id?.toString() || " ",
     installments: order.installments,
     card_type: order.card_type,
     card_last4digits: order.card_last4digits,
