@@ -55,12 +55,6 @@ const getAllStickers = async (req: Request, res: Response) => {
         },
       },
     };
-  } else if (sortField === "subniche") {
-    orderBy = {
-      subniche: {
-        name: sortOrder,
-      },
-    };
   } else {
     orderBy[sortField] = sortOrder;
   }
@@ -70,17 +64,15 @@ const getAllStickers = async (req: Request, res: Response) => {
       where: {
         OR: [
           {
-            subniche: {
-              category: {
-                name: {
-                  contains: search,
-                  mode: "insensitive",
-                },
+            category: {
+              name: {
+                contains: search,
+                mode: "insensitive",
               },
             },
           },
           {
-            subniche: {
+            category: {
               name: {
                 contains: search,
                 mode: "insensitive",
@@ -95,17 +87,15 @@ const getAllStickers = async (req: Request, res: Response) => {
       where: {
         OR: [
           {
-            subniche: {
-              category: {
-                name: {
-                  contains: search,
-                  mode: "insensitive",
-                },
+            category: {
+              name: {
+                contains: search,
+                mode: "insensitive",
               },
             },
           },
           {
-            subniche: {
+            category: {
               name: {
                 contains: search,
                 mode: "insensitive",
@@ -117,6 +107,7 @@ const getAllStickers = async (req: Request, res: Response) => {
       include: {
         attachment: true,
         translations: true,
+        category: true,
         subniche: {
           include: {
             category: true,
