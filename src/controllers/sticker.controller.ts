@@ -244,6 +244,69 @@ const getStickersBySubnicheId = async (req: Request, res: Response) => {
   }
 };
 
+const getStickersByCategoryId = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+  //@ts-ignore
+  const userId = req.user.id;
+
+  if (!userId) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: "Usuário não autenticado." });
+  }
+
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+
+  try {
+    const totalStickers = await prisma.sticker.count({
+      where: {
+        categoryId,
+      },
+    });
+
+    const stickers = await prisma.sticker.findMany({
+      where: {
+        categoryId,
+      },
+      include: {
+        attachment: true,
+        translations: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    // Consulta para obter os IDs dos stickers favoritos do usuário
+    const favoriteStickers = await prisma.favoriteSticker.findMany({
+      where: { userId },
+      select: { stickerId: true },
+    });
+
+    const favoriteStickerIds = favoriteStickers.map((fav) => fav.stickerId);
+
+    // Adicionando o campo isFavorite a cada sticker
+    const stickersWithFavorite = stickers.map((sticker) => ({
+      ...sticker,
+      isFavorite: favoriteStickerIds.includes(sticker.id),
+    }));
+
+    res.status(httpStatus.OK).json({
+      page,
+      pageSize,
+      total: totalStickers,
+      totalPages: Math.ceil(totalStickers / pageSize),
+      stickers: stickersWithFavorite,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Erro ao buscar figurinhas pelo subnicho." });
+  }
+};
+
 const updateSticker = async (req: Request, res: Response) => {
   const { stickerId } = req.params;
   const { name, attachmentId, categoryId, subnicheId, userId, translations } = req.body;
@@ -299,6 +362,7 @@ export default {
   getTotalStickers,
   getStickerById,
   getStickersBySubnicheId,
+  getStickersByCategoryId,
   updateSticker,
   deleteSticker,
 };

@@ -27,6 +27,14 @@ router
   );
 
 router
+  .route("/category/:categoryId")
+  .get(
+    auth(),
+    validate(stickerValidation.getStickersByCategoryId),
+    stickerController.getStickersByCategoryId
+  );
+
+router
   .route("/subniche/:subnicheId")
   .get(
     auth(),
