@@ -73,11 +73,11 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
       const randomPassword = generateRandomPassword(12);
 
       // Criar usuário no banco de dados
-      user = await createUser("wallace_2014_@hotmail.com", randomPassword, fullName);
+      user = await createUser(email, randomPassword, fullName);
 
       // Enviar senha ao usuário (implementação futura)
       await emailService.sendEmail({
-        to: "wallace_2014_@hotmail.com",
+        to: email,
         subject: "Acesso da plataforma",
         template: "access",
         data: {
