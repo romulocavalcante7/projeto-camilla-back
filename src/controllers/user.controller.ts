@@ -251,7 +251,6 @@ const getUser = catchAsync(async (req: Request, res: Response) => {
     "id",
     "email",
     "name",
-    "password",
     "role",
     "isEmailVerified",
     "createdAt",
