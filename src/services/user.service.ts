@@ -99,7 +99,7 @@ const handleOrderApproved = async (event: OrderApprovedEvent): Promise<void> => 
           fullName: event.Customer.full_name,
           firstName: event.Customer.first_name,
           mobile: event.Customer.mobile,
-          cpf: event.Customer.CPF,
+          cpf: event?.Customer?.CPF || " ",
           ip: event.Customer.ip,
         },
       });
