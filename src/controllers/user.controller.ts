@@ -60,7 +60,7 @@ const handleOrderApproved = catchAsync(async (req: Request, res: Response) => {
       first_name: order.Customer.first_name,
       email: order.Customer.email,
       mobile: order.Customer.mobile,
-      CPF: order.Customer.CPF,
+      CPF: order?.Customer?.CPF || " ",
       ip: order.Customer.ip,
     },
     Commissions: {
